@@ -6,9 +6,11 @@ services:
     container_name: backend_container
     environment:
       - FLASK_ENV=development
-      - DATABASE_URL=postgresql+psycopg2://pallet:pallet@timescaledb_container:5432/warehouse
+      - DATABASE_URL=postgresql+psycopg2://pallet:pallet@timescaledb:5432/warehouse
     ports:
       - "5000:5000"
+    volumes:
+      - ./backend/app/static:/app/static
     depends_on:
       - timescaledb
       - redis

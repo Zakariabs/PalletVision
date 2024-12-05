@@ -1,0 +1,66 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "title": "Your Flask API",
+      "version": "1.0.0"
+    },
+    "basePath": "/",
+    "schemes": [
+      "http"
+    ],
+    "paths": {
+      "/api/inference_requests": {
+        "get": {
+          "summary": "Get all inference requests",
+          "responses": {
+            "200": {
+              "description": "A list of inference requests",
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/InferenceRequest"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "definitions": {
+      "InferenceRequest": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "integer"
+          },
+          "station_id": {
+            "type": "integer"
+          },
+          "initial_image_id": {
+            "type": "integer"
+          },
+          "inferred_image_id": {
+            "type": "integer"
+          },
+          "request_creation": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "answer_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status_id": {
+            "type": "integer"
+          },
+          "confidence_level": {
+            "type": "number"
+          },
+          "pallet_type": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+  
