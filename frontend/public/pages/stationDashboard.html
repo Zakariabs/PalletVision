@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Station Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Include Header -->
+    {% include 'header.html' %}
+
+    <div class="container mt-5">
+        <!-- Station Title -->
+        <h2 class="text-center mb-4">{{ station_name }}</h2>
+
+        <!-- Station Status and Placeholder Image -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="status-box p-3 rounded {{ station['class'] }}">
+                <h4 class="mb-0">Status</h4>
+                <span class="status-indicator">{{ station['text'] }}</span>
+            </div>
+            <div class="image-placeholder">
+                <!-- Placeholder for Station Image -->
+                <div class="image-box text-center">
+                    <p class="text-muted">Station Image Placeholder</p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Table for Inference Requests -->
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Answer Timestamp</th>
+                        <th>Pallet Type</th>
+                        <th>Initial Image</th>
+                        <th>Inferred Image</th>
+                        <th>Confidence Level</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in inference_requests %}
+                    <tr>
+                        <td>{{ row.answer_timestamp }}</td>
+                        <td>{{ row.pallet_type }}</td>
+                        <td>
+                            {% if row.initial_image %}
+                            <img src="{{ row.initial_image }}" alt="Initial Image" class="table-image">
+                            {% else %}
+                            <span class="text-muted">No Image</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.inferred_image %}
+                            <img src="{{ row.inferred_image }}" alt="Inferred Image" class="table-image">
+                            {% else %}
+                            <span class="text-muted">No Image</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ row.confidence_level }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Include Footer -->
+    {% include 'footer.html' %}
+
+    <script src="../js/stationDashboard.bundle.js"></script>
+    <script src="../src/index.js"></script>
+</body>
+</html>

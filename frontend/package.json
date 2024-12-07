@@ -3,36 +3,48 @@
     "version": "1.0.0",
     "private": true,
     "dependencies": {
-      "react": "^17.0.2",
-      "react-dom": "^17.0.2",
-      "react-scripts": "4.0.3",
-      "@babel/core": "^7.16.0",
-      "@babel/preset-env": "^7.16.0",
-      "@babel/preset-react": "^7.16.0"
+        "@babel/preset-react": "^7.16.0",
+        "apexcharts": "^4.1.0",
+        "axios": "^1.7.9",
+        "react": "^17.0.2",
+        "react-dom": "^17.0.2",
+        "socket.io-client": "^4.8.1"
     },
     "scripts": {
-      "start": "react-scripts start",
-      "build": "react-scripts build",
-      "test": "react-scripts test",
-      "eject": "react-scripts eject"
+        "start": "react-scripts start",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject"
     },
     "eslintConfig": {
-      "extends": [
-        "react-app",
-        "react-app/jest"
-      ]
+        "extends": [
+            "react-app",
+            "react-app/jest"
+        ]
     },
     "browserslist": {
-      "production": [
-        ">0.2%",
-        "not dead",
-        "not op_mini all"
-      ],
-      "development": [
-        "last 1 chrome version",
-        "last 1 firefox version",
-        "last 1 safari version"
-      ]
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "main": "index.js",
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "devDependencies": {
+        "@babel/core": "^7.26.0",
+        "@babel/preset-env": "^7.26.0",
+        "babel-loader": "^9.2.1",
+        "webpack": "^5.97.1",
+        "webpack-cli": "^5.1.4",
+        "webpack-dev-server": "^4.15.2"
     }
-  }
-  
+}
