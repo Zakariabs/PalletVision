@@ -25,7 +25,7 @@ services:
 
   timescaledb:
     image: timescale/timescaledb:latest-pg14
-    container_name: timescaledb_container
+    container_name: timescaledb
     environment:
       POSTGRES_USER: pallet
       POSTGRES_PASSWORD: pallet

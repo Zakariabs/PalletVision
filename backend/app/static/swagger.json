@@ -1,66 +1,108 @@
 {
-    "swagger": "2.0",
-    "info": {
-      "title": "Your Flask API",
-      "version": "1.0.0"
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "PalletVision API",
+    "description": "API documentation for PalletVision"
+  },
+  "host": "127.0.0.1:5000",
+  "basePath": "/",
+  "schemes": ["http"],
+  "paths": {
+    "/api/inference_requests": {
+      "get": {
+        "summary": "Get all inference requests",
+        "description": "Fetch all inference requests from the database",
+        "responses": {
+          "200": {
+            "description": "List of inference requests",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/InferenceRequest"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new inference request",
+        "description": "Create a new inference request by sending JSON data",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InferenceRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Inference request created",
+            "schema": {
+              "$ref": "#/definitions/InferenceRequest"
+            }
+          }
+        }
+      }
     },
-    "basePath": "/",
-    "schemes": [
-      "http"
-    ],
-    "paths": {
-      "/api/inference_requests": {
-        "get": {
-          "summary": "Get all inference requests",
-          "responses": {
-            "200": {
-              "description": "A list of inference requests",
-              "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/definitions/InferenceRequest"
+    "/api/new_installation": {
+      "post": {
+        "summary": "Create a new user and station",
+        "description": "Create a new station and associate it with a user",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/NewInstallationRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "New installation created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "integer"
                 }
               }
             }
           }
         }
       }
+    }
+  },
+  "definitions": {
+    "InferenceRequest": {
+      "type": "object",
+      "properties": {
+        "station_id": { "type": "integer" },
+        "initial_image_id": { "type": "integer" },
+        "inferred_image_id": { "type": "integer" },
+        "request_creation": { "type": "string", "format": "date-time" },
+        "answer_time": { "type": "string", "format": "date-time" },
+        "status_id": { "type": "integer" },
+        "confidence_level": { "type": "number", "format": "float" },
+        "pallet_type": { "type": "string" }
+      }
     },
-    "definitions": {
-      "InferenceRequest": {
-        "type": "object",
-        "properties": {
-          "request_id": {
-            "type": "integer"
-          },
-          "station_id": {
-            "type": "integer"
-          },
-          "initial_image_id": {
-            "type": "integer"
-          },
-          "inferred_image_id": {
-            "type": "integer"
-          },
-          "request_creation": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "answer_time": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "status_id": {
-            "type": "integer"
-          },
-          "confidence_level": {
-            "type": "number"
-          },
-          "pallet_type": {
-            "type": "integer"
-          }
-        }
+    "NewInstallationRequest": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "location": { "type": "string" },
+        "username": { "type": "string" },
+        "password": { "type": "string" }
       }
     }
   }
-  
+}
