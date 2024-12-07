@@ -18,7 +18,6 @@ const InferenceRequestList = () => {
                 setError(error.message);
             });
     }, []);
-
     return (
         <div>
             <h1>Inference Requests</h1>
@@ -29,27 +28,27 @@ const InferenceRequestList = () => {
                     <thead>
                         <tr>
                             <th>Request ID</th>
-                            <th>Station ID</th>
+                            <th>Station Name</th>
                             <th>Initial Image ID</th>
                             <th>Inferred Image ID</th>
                             <th>Request Creation</th>
                             <th>Answer Time</th>
-                            <th>Status ID</th>
+                            <th>Status</th>
                             <th>Confidence Level</th>
                             <th>Pallet Type</th>
                         </tr>
                     </thead>
                     <tbody>
                         {requests.map(request => (
-                            <tr key={request.request_id}>
+                            <tr key={request.id}>
                                 <td>{request.request_id}</td>
-                                <td>{request.station_id}</td>
+                                <td>{request.station_name}</td>
                                 <td>{request.initial_image_id}</td>
                                 <td>{request.inferred_image_id}</td>
                                 <td>{request.request_creation}</td>
                                 <td>{request.answer_time}</td>
-                                <td>{request.status_id}</td>
-                                <td>{request.confidence_level}</td>
+                                <td>{request.status_name}</td>
+                                <td>{request.confidence_level ? request.confidence_level.toFixed(2) : 'N/A'}</td>
                                 <td>{request.pallet_type}</td>
                             </tr>
                         ))}

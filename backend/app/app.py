@@ -70,6 +70,7 @@ def create_inference_request():
           required:
             - station_id
             - initial_image_id
+            - inferred_image_id
             - request_creation
             - answer_time
             - status_id
@@ -99,6 +100,7 @@ def create_inference_request():
     """
     data = request.json
     pallet_type = session.query(PalletType).filter_by(name=data['pallet_type']).first()
+
     if not pallet_type:
         return jsonify({'message': 'Invalid pallet type name'}), 400
     new_request = InferenceRequest(
@@ -109,11 +111,11 @@ def create_inference_request():
         answer_time=data['answer_time'],
         status_id=data['status_id'],
         confidence_level=data['confidence_level'],
-        pallet_type=pallet_type.id
+        pallet_type=pallet_type
     )
     app.session.add(new_request)
     app.session.commit()
-    return jsonify(new_request), 201
+    return jsonify(new_request.to_dict()), 201
 
 
 
