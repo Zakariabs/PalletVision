@@ -70,8 +70,8 @@ body {
 
 /* Button stylings */
 .btn-primary:hover {
-    background-color: var(--text-higlight) !important; /* Highlight color */
-    color: var(--dark-bg) !important; /* Contrast text */
+    background-color: var(--secondary-bg) !important; /* Highlight color */
+    color: var(--text-focus) !important; /* Contrast text */
 }
 
 .btn-secondary:hover {

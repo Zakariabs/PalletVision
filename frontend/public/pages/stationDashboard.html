@@ -5,21 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Station Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="../css/style.css"> <!-- Adjusted path for static style.css -->
 </head>
 <body>
-    <!-- Include Header -->
-    {% include 'header.html' %}
+    <!-- Placeholder for Header -->
+    <div id="header"></div>
 
     <div class="container mt-5">
         <!-- Station Title -->
-        <h2 class="text-center mb-4">{{ station_name }}</h2>
+        <h2 class="text-center mb-4" id="station-name">Station Name Placeholder</h2>
 
         <!-- Station Status and Placeholder Image -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="status-box p-3 rounded {{ station['class'] }}">
+            <div class="status-box p-3 rounded bg-secondary text-white" id="station-status">
                 <h4 class="mb-0">Status</h4>
-                <span class="status-indicator">{{ station['text'] }}</span>
+                <span class="status-indicator">Loading...</span>
             </div>
             <div class="image-placeholder">
                 <!-- Placeholder for Station Image -->
@@ -28,7 +28,6 @@
                 </div>
             </div>
         </div>
-
 
         <!-- Table for Inference Requests -->
         <div class="table-responsive">
@@ -42,37 +41,18 @@
                         <th>Confidence Level</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {% for row in inference_requests %}
-                    <tr>
-                        <td>{{ row.answer_timestamp }}</td>
-                        <td>{{ row.pallet_type }}</td>
-                        <td>
-                            {% if row.initial_image %}
-                            <img src="{{ row.initial_image }}" alt="Initial Image" class="table-image">
-                            {% else %}
-                            <span class="text-muted">No Image</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if row.inferred_image %}
-                            <img src="{{ row.inferred_image }}" alt="Inferred Image" class="table-image">
-                            {% else %}
-                            <span class="text-muted">No Image</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ row.confidence_level }}%</td>
-                    </tr>
-                    {% endfor %}
+                <tbody id="inference-requests">
+                    <!-- Rows will be dynamically inserted here -->
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- Include Footer -->
-    {% include 'footer.html' %}
+    <!-- Placeholder for Footer -->
+    <div id="footer"></div>
 
-    <script src="../js/stationDashboard.bundle.js"></script>
-    <script src="../src/index.js"></script>
+    <!-- JavaScript -->
+    <script src="../js/stationDashboard.bundle.js"></script> <!-- Dashboard-specific logic -->
+    <script src="../js/index.js"></script> <!-- Shared partial-loading logic -->
 </body>
 </html>
