@@ -34,6 +34,20 @@ body {
     background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FFFFFF' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(255, 255, 255, 0.5)' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
 }
 
+/* Navbar Brand Color */
+.navbar-brand {
+    color: var(--text-primary) !important; 
+    font-weight: bold;
+    font-size: 1.25rem; 
+    text-decoration: none;
+}
+
+/* Navbar Brand Logo */
+.navbar-logo {
+    width: 50px; 
+    height: auto;
+    display: inline-block;
+}
 
 
 /* Card Styles */
@@ -70,13 +84,13 @@ body {
 
 /* Button stylings */
 .btn-primary:hover {
-    background-color: var(--secondary-bg) !important; /* Highlight color */
-    color: var(--text-focus) !important; /* Contrast text */
+    background-color: var(--secondary-bg) ; /* Highlight color */
+    color: var(--text-focus) ; /* Contrast text */
 }
 
 .btn-secondary:hover {
-    background-color: var(--secondary-bg) !important; /* Secondary background */
-    color: var(--text-focus) !important; /* Focus text */
+    background-color: var(--secondary-bg) ; /* Secondary background */
+    color: var(--text-focus) ; /* Focus text */
 }
 
 
