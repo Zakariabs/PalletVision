@@ -1,3 +1,2 @@
 # PalletVision
 
-test permissions samantha
