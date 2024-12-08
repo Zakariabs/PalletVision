@@ -1,0 +1,153 @@
+:root {
+    --primary-bg: #101F2D;
+    --dark-bg: #0C1822;
+    --secondary-bg: #223546;
+    --text-primary: #D5E2E0;
+    --text-higlight: #A7E830;
+    --text-focus: #FFFFFF;
+}
+
+body {
+    background-color: var(--primary-bg);/* Page background */
+    color: var(--text-primary);
+}
+
+/* Dark boxes Styles */
+.custom-navbar, .custom-footer, .table thead th, .card  {
+    background-color: var(--dark-bg) !important; /* Header background */
+}
+
+/* header, footer links */
+.custom-navbar .nav-link, .custom-footer a {
+    color: var(--text-primary) !important; /* Link color */
+    text-decoration: none;
+}
+
+/* header ,footer links: Brighter hover effects for visiblity*/
+.custom-navbar .nav-link:hover, .custom-footer a:hover {
+    color: var(--text-focus) !important; /* Brighter hover effect */
+    font-weight: bold;
+}
+
+/* Navbar Toggler Styles */
+.custom-toggler .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FFFFFF' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(255, 255, 255, 0.5)' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+/* Navbar Brand Color */
+.navbar-brand {
+    color: var(--text-primary) !important; 
+    font-weight: bold;
+    font-size: 1.25rem; 
+    text-decoration: none;
+}
+
+/* Navbar Brand Logo */
+.navbar-logo {
+    width: 50px; 
+    height: auto;
+    display: inline-block;
+}
+
+
+/* Card Styles */
+.card {
+    border: none;
+}
+
+
+/* Table Styles */
+
+@media (max-width: 768px) {
+    .table {
+        margin-bottom: 20px;
+    }
+}
+
+
+
+
+.table th {
+    background-color: var(--secondary-bg); /* Header background */
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.table-image {
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 5px;
+    object-fit: cover;
+}
+
+/* Button stylings */
+.btn-primary:hover {
+    background-color: var(--secondary-bg) ; /* Highlight color */
+    color: var(--text-focus) ; /* Contrast text */
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-bg) ; /* Secondary background */
+    color: var(--text-focus) ; /* Focus text */
+}
+
+
+
+/* Custom Styles for Dashboard */
+
+/*add size limitation for small screens*/
+@media (max-width: 768px) {
+    .chart-box, .gauge-box {
+        height: 120px;
+        width: 100%;
+    }
+}
+
+/* Chart Placeholder */
+.chart-box {
+    height: 150px;
+    width: 100%;
+    background-color: #FFFFFF;
+    border-radius: 5px;
+}
+
+/* Gauge Box Placeholder */
+.gauge-box {
+    height: 200px;
+    width: 100%;
+    background-color:  var(--primary-bg); /* Dark background for gauge area */
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-higlight); /* Highlight color for value */
+}
+
+/*station data*/
+
+/* Station Status Box */
+.status-box {
+    background-color: var(--secondary-bg); /* Dark blue background */
+    display: inline-block;
+}
+
+/* Placeholder Image Box */
+.image-box {
+    width: 150px;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    background-color: var(--text-primary); /* Light background for placeholder */
+    color: var(--secondary-bg); /* Muted text color */
+    font-size: 0.9rem;
+}
+
+
+
+
+
+
