@@ -18,7 +18,7 @@
             <!-- Station Status -->
             <div class="col-md-4">
                 <h5>Station Status</h5>
-                <table class="table table-bordered">
+                <table id="stationStatusTable" class="table table-bordered">
                     <thead>
                         <tr>
                             <th>Station</th>
@@ -26,28 +26,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Dynamically Inserted Rows -->
-                        <!-- Example Placeholder -->
-                        <tr>
-                            <td>Station 1</td>
-                            <td class="text-success">Ready</td>
-                        </tr>
-                        <tr>
-                            <td>Station 2</td>
-                            <td class="text-warning">Processing</td>
-                        </tr>
-                        <tr>
-                            <td>Station 3</td>
-                            <td class="text-danger">Offline</td>
-                        </tr>
+                        <!-- Dynamically inserted rows -->
                     </tbody>
                 </table>
             </div>
 
-            <!-- Pallet Count Chart -->
+            <!-- Pallet Count Charts -->
             <div class="col-md-8">
                 <h5 class="text-center">Pallet Count</h5>
-                <div id="palletCountChart"></div> <!-- Chart Placeholder -->
+                <div id="palletCountChart7Days"></div> <!-- Placeholder for Last 7 Days Chart -->
+                <div id="palletCountChart30Days"></div> <!-- Placeholder for Last 30 Days Chart -->
             </div>
         </div>
     </main>

@@ -1,13 +1,15 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, func
+from sqlalchemy.orm import sessionmaker, joinedload
 from starlette.status import HTTP_201_CREATED
 from flasgger import Swagger
+from datetime import datetime, timedelta
 
 
 from models import Base, InferenceRequest, PalletType, Status, StationStatus, Station, User, Image
 
+# Initialize Flask App
 app = Flask(__name__)
 CORS(app)
 swagger = Swagger(app, template={
@@ -18,6 +20,7 @@ swagger = Swagger(app, template={
     }
 })
 
+# Database Configuration
 DATABASE_URL = "postgresql+psycopg2://pallet:pallet@timescaledb:5432/warehouse"
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
@@ -25,6 +28,7 @@ session = Session()
 Base.metadata.create_all(engine)
 app.session = session
 
+# Helper Function: Add Initial Values
 def add_initial_values(session):
     if not session.query(PalletType).filter_by(name='EPAL').first():
         epal = PalletType(name='EPAL')
@@ -43,7 +47,7 @@ def add_initial_values(session):
 
 add_initial_values(session)
 
-
+# Backend API Endpoints
 @app.route('/api/inference_requests', methods=['GET'])
 def get_inference_requests():
     """
@@ -186,6 +190,58 @@ def upload_image():
     return jsonify({'message': 'Image Uploaded', 'id': uploaded_image.id,'path':uploaded_image.path}), HTTP_201_CREATED
 
 
+@app.route('/api/stations', methods=['GET'])
+def get_stations():
+    stations = Station.query.options(joinedload(Station.station_status)).all()
+    return jsonify([
+        {
+            "station_name": station.station_name,
+            "station_status": station.station_status.stationStatus_name,
+            "status_class": (
+                "text-success" if station.station_status.stationStatus_name == "Ready"
+                else "text-warning" if station.station_status.stationStatus_name == "Processing"
+                else "text-danger"
+            )
+        }
+        for station in stations
+    ])
+
+@app.route('/api/pallet_count', methods=['GET'])
+def pallet_count():
+    now = datetime.utcnow()
+    seven_days_ago = now - timedelta(days=7)
+    thirty_days_ago = now - timedelta(days=30)
+
+    last_7_days = (
+        app.session.query(InferenceRequest.pallet_type, func.count(InferenceRequest.request_id))
+        .filter(InferenceRequest.request_creation >= seven_days_ago)
+        .group_by(InferenceRequest.pallet_type)
+        .all()
+    )
+    last_30_days = (
+        app.session.query(InferenceRequest.pallet_type, func.count(InferenceRequest.request_id))
+        .filter(InferenceRequest.request_creation >= thirty_days_ago)
+        .group_by(InferenceRequest.pallet_type)
+        .all()
+    )
+
+    def format_data(data):
+        formatted = []
+        for pallet_type, count in data:
+            pallet_type_name = (
+                app.session.query(PalletType.type_name)
+                .filter(PalletType.type_id == pallet_type)
+                .scalar()
+            )
+            formatted.append({"pallet_type": pallet_type_name, "count": count})
+        return formatted
+
+    return jsonify({
+        "last_7_days": format_data(last_7_days),
+        "last_30_days": format_data(last_30_days),
+    })
+
+# Run Flask App
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')
 
