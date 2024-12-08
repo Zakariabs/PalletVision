@@ -7,10 +7,21 @@
     --text-focus: #FFFFFF;
 }
 
-body {
+html, body {
+    height: 100%; 
+    margin: 0;
+    display: flex;
+    flex-direction: column;
     background-color: var(--primary-bg);/* Page background */
     color: var(--text-primary);
 }
+
+main {
+    flex: 1; /*  main expands and pushes the footer to the bottom if content is small */
+}
+
+
+
 
 /* Dark boxes Styles */
 .custom-navbar, .custom-footer, .table thead th, .card  {
@@ -49,6 +60,13 @@ body {
     display: inline-block;
 }
 
+/* Footer always at the bottom */
+footer {
+    text-align: center;
+    padding: 10px 0;
+    position: relative;
+    width: 100%;
+}
 
 /* Card Styles */
 .card {
@@ -69,10 +87,12 @@ body {
 
 .table th {
     background-color: var(--secondary-bg); /* Header background */
+    color: var(--text-focus); /* Header text color */
 }
 
 .table td {
     vertical-align: middle;
+    color: var(--text-primary); /* Table text color */
 }
 
 .table-image {
