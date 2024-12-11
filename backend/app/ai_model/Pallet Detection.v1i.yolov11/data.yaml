@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['euro']
+
+roboflow:
+  workspace: zakarias
+  project: pallet-detection-bpx8m-vz3n2
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/zakarias/pallet-detection-bpx8m-vz3n2/dataset/1
