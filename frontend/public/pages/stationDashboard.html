@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Station Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css"> <!-- Adjusted path for static style.css -->
+</head>
+<body>
+    <!-- No header on this Dashboard -->
+
+
+    <main class="container mt-5">
+        <!-- Station Title -->
+        <h2 class="text-center mb-4" id="station-name">Station Name Placeholder</h2>
+
+        <!-- Station Status and Placeholder Image -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="status-box p-3 rounded bg-secondary text-white" id="station-status">
+                <h4 class="mb-0">Status</h4>
+                <span class="status-indicator">Loading...</span>
+            </div>
+            <div class="image-placeholder">
+                <!-- Placeholder for Station Image -->
+                <div class="image-box text-center">
+                    <p class="text-muted">Station Image Placeholder</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table for Inference Requests -->
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Answer Timestamp</th>
+                        <th>Pallet Type</th>
+                        <th>Initial Image</th>
+                        <th>Inferred Image</th>
+                        <th>Confidence Level</th>
+                    </tr>
+                </thead>
+                <tbody id="inference-requests">
+                    <!-- Rows will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Placeholder for Footer -->
+    <div id="footer"></div>
+
+    <!-- JavaScript -->
+    <script src="../js/stationDashboard.bundle.js"></script> <!-- Dashboard-specific logic -->
+    <script src="../js/index.bundle.js"></script>
+</body>
+</html>

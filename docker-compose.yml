@@ -20,12 +20,19 @@ services:
     container_name: frontend_container
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend/public:/frontend/public  # Ensure local files are mapped correctly
+    environment:
+      - NODE_ENV=development
     depends_on:
       - backend
+    command: ["npm", "start"]  # Automatically start the frontend dev server
+
+
 
   timescaledb:
     image: timescale/timescaledb:latest-pg14
-    container_name: timescaledb_container
+    container_name: timescaledb
     environment:
       POSTGRES_USER: pallet
       POSTGRES_PASSWORD: pallet

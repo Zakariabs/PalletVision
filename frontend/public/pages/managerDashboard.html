@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css"> <!-- Ensure correct relative path -->
+</head>
+<body>
+    <!-- Placeholder for Header -->
+    <div id="header"></div>
+
+    <!-- Main Content -->
+    <main class="container mt-5">
+        <h2 class="text-center mb-4">Manager Dashboard</h2>
+        <div class="row">
+            <!-- Station Status -->
+            <div class="col-md-4">
+                <h5>Station Status</h5>
+                <table id="stationStatusTable" class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Station</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamically inserted rows -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pallet Count Charts -->
+            <div class="col-md-8">
+                <h5 class="text-center">Pallet Count</h5>
+                <div id="palletCountChart7Days"></div> <!-- Placeholder for Last 7 Days Chart -->
+                <div id="palletCountChart30Days"></div> <!-- Placeholder for Last 30 Days Chart -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Placeholder for Footer -->
+    <div id="footer"></div>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/managerDashboard.bundle.js"></script>
+    <script src="../js/index.bundle.js"></script>
+</body>
+</html>

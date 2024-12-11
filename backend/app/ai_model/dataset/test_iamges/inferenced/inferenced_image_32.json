@@ -1,0 +1,30 @@
+{
+  "inference_id": "02734ecd-a04e-4819-a804-8886ca477c4d",
+  "time": 0.032244566999906965,
+  "image": {
+    "width": 640,
+    "height": 640
+  },
+  "predictions": [
+    {
+      "x": 402.5,
+      "y": 214.5,
+      "width": 77.0,
+      "height": 33.0,
+      "confidence": 0.8794634342193604,
+      "class": "euro",
+      "class_id": 0,
+      "detection_id": "e187dd73-cf3a-49ff-bcea-08044fa9d629"
+    },
+    {
+      "x": 38.0,
+      "y": 339.5,
+      "width": 74.0,
+      "height": 55.0,
+      "confidence": 0.6450803279876709,
+      "class": "euro",
+      "class_id": 0,
+      "detection_id": "fdeeb492-d488-4db7-bdce-8f552c3e87cf"
+    }
+  ]
+}

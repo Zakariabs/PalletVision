@@ -1,0 +1,20 @@
+{
+  "inference_id": "cc945eb0-3aeb-4ab3-b71c-125f90fe0f3c",
+  "time": 0.03707316300005914,
+  "image": {
+    "width": 640,
+    "height": 640
+  },
+  "predictions": [
+    {
+      "x": 232.5,
+      "y": 308.5,
+      "width": 49.0,
+      "height": 13.0,
+      "confidence": 0.6971407532691956,
+      "class": "euro",
+      "class_id": 0,
+      "detection_id": "a2fc5bd7-9d32-41f2-81ad-a61eadbd8f88"
+    }
+  ]
+}
