@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from sqlalchemy.types import TIMESTAMP
+
 import bcrypt
 
 Base = declarative_base()

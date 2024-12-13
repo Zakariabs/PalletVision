@@ -4,7 +4,8 @@ from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker, joinedload
 from starlette.status import HTTP_201_CREATED
 from flasgger import Swagger
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+import logging
 
 
 from models import Base, InferenceRequest, PalletType, Status, StationStatus, Station, User, Image
@@ -19,6 +20,10 @@ swagger = Swagger(app, template={
         "version": "0.0.1"
     }
 })
+
+# Logging Configuration
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Database Configuration
 DATABASE_URL = "postgresql+psycopg2://pallet:pallet@timescaledb:5432/warehouse"
@@ -226,13 +231,10 @@ def pallet_count():
     )
 
     def format_data(data):
+        pallet_types = {p.id: p.name for p in session.query(PalletType).all()}
         formatted = []
         for pallet_type, count in data:
-            pallet_type_name = (
-                app.session.query(PalletType.type_name)
-                .filter(PalletType.type_id == pallet_type)
-                .scalar()
-            )
+            pallet_type_name = pallet_types.get(pallet_type)
             formatted.append({"pallet_type": pallet_type_name, "count": count})
         return formatted
 
@@ -240,6 +242,8 @@ def pallet_count():
         "last_7_days": format_data(last_7_days),
         "last_30_days": format_data(last_30_days),
     })
+
+
 
 # Run Flask App
 if __name__ == "__main__":
