@@ -1,5 +1,5 @@
 import psycopg2
-from backend.app.models import Image, Station, InferenceRequest, User
+from app.models import Image, Station, InferenceRequest, User
 
 
 from abc import ABC, abstractmethod
@@ -193,3 +193,10 @@ class TimescaleDBRepository(FileStorageRepository):
         query = "UPDATE User SET password = %s WHERE id = %s"
         self.cursor.execute(query, (password, user_id))
         self.conn.commit()
+
+    def close(self):
+        if self.cursor:
+            self.cursor.close()
+        if self.conn:
+            self.conn.close()
+
