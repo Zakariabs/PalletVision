@@ -197,14 +197,14 @@ def upload_image():
 
 @app.route('/api/stations', methods=['GET'])
 def get_stations():
-    stations = Station.query.options(joinedload(Station.station_status)).all()
+    stations = app.session.query(Station).options(joinedload(Station.station_status)).all() 
     return jsonify([
         {
-            "station_name": station.station_name,
-            "station_status": station.station_status.stationStatus_name,
+            "station_name": station.name,
+            "station_status": station.station_status.name,
             "status_class": (
-                "text-success" if station.station_status.stationStatus_name == "Ready"
-                else "text-warning" if station.station_status.stationStatus_name == "Processing"
+                "text-success" if station.station_status.name == "Ready"
+                else "text-warning" if station.station_status.name == "Processing"
                 else "text-danger"
             )
         }

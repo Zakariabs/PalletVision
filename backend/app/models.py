@@ -55,7 +55,7 @@ class Station(Base):
             'id': self.id,
             'name': self.name,
             'location':self.location,
-            'status':self.station_status.name
+            'status': self.station_status.name if self.station_status else "Unknown"
         }
 class User(Base):
     __tablename__ = 'users'
