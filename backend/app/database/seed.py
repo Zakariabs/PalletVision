@@ -2,33 +2,39 @@ import os
 import json
 import random
 from datetime import datetime, timedelta, timezone
+
 from app.models import (
     Base, StationStatus, Status, PalletType, Station, User, Image, InferenceRequest
 )
+
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
 
+
+
+# Database Configuration
 DATABASE_URL = "postgresql+psycopg2://pallet:pallet@timescaledb:5432/warehouse"
 
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 session = Session()
 
+
 # Seed data
 def seed_database():
     try:
         # 1. StationStatus
-        station_statuses = ['Offline', 'Ready', 'Processing']
-        for status in station_statuses:
-            if not session.query(StationStatus).filter_by(name=status).first():
-                session.add(StationStatus(name=status))
+            # station_statuses = ['Offline', 'Ready', 'Processing']
+            # for status in station_statuses:
+                # if not session.query(StationStatus).filter_by(name=status).first():
+                    # session.add(StationStatus(name=status))
 
         # 2. Status
-        statuses = ['Done', 'Processing', 'Error']
-        for status in statuses:
-            if not session.query(Status).filter_by(name=status).first():
-                session.add(Status(name=status))
+            # statuses = ['Done', 'Processing', 'Error']
+            # for status in statuses:
+                # if not session.query(Status).filter_by(name=status).first():
+                    # session.add(Status(name=status))
 
         # 3. PalletType
         pallet_types = ['EPAL', 'Other']
@@ -64,8 +70,9 @@ def seed_database():
         session.commit()
 
         # 6. Images
-        initial_image_dir = "backend/app/ai_model/dataset/test_images"
-        inferred_image_dir = "backend/app/ai_model/dataset/test_images/inferenced"
+        initial_image_dir = "app/ai_model/dataset/test_images"
+        
+        inferred_image_dir = "app/ai_model/dataset/test_images/inferenced"
         image_map = {}
 
         # Add initial images
@@ -87,7 +94,7 @@ def seed_database():
                 image_map[file] = image.id
 
         # 7. InferenceRequests
-        json_dir = "backend/app/ai_model/dataset/test_images/inferenced"
+        json_dir = "app/ai_model/dataset/test_images/inferenced"
         station_ids = [station.id for station in session.query(Station).all()]  # Fetch all station IDs
 
         for file in os.listdir(json_dir):

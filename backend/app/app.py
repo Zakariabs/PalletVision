@@ -4,7 +4,7 @@ from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker, joinedload
 from starlette.status import HTTP_201_CREATED
 from flasgger import Swagger
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import logging
 
 
