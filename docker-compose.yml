@@ -10,10 +10,9 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./backend/app/static:/app/static
+      - ./backend/app/ai_model/dataset/test_images:/app/images
     depends_on:
       - timescaledb
-      - redis
 
   frontend:
     build: ./frontend
@@ -28,8 +27,6 @@ services:
       - backend
     command: ["npm", "start"]  # Automatically start the frontend dev server
 
-
-
   timescaledb:
     image: timescale/timescaledb:latest-pg14
     container_name: timescaledb
@@ -39,9 +36,3 @@ services:
       POSTGRES_DB: warehouse
     ports:
       - "5432:5432"
-
-  redis:
-    image: redis:latest
-    container_name: redis_container
-    ports:
-      - "6379:6379"

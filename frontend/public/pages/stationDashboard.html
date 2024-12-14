@@ -10,16 +10,24 @@
 <body>
     <!-- No header on this Dashboard -->
 
-
     <main class="container mt-5">
         <!-- Station Title -->
-        <h2 class="text-center mb-4" id="station-name">Station Name Placeholder</h2>
+        <h2 class="text-center mb-4" id="station-name">Stations</h2>
+
+        <!-- Station Dropdown -->
+        <div class="mb-4">
+            <label for="station-select" class="form-label">Select Station:</label>
+            <select class="form-select" id="station-select">
+                <option value="">All Stations</option>
+                <!-- Options will be dynamically inserted here -->
+            </select>
+        </div>
 
         <!-- Station Status and Placeholder Image -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4" id="station-info" style="display: none;">
             <div class="status-box p-3 rounded bg-secondary text-white" id="station-status">
                 <h4 class="mb-0">Status</h4>
-                <span class="status-indicator">Loading...</span>
+                <span class="status-indicator" style="display: none;">Loading...</span>
             </div>
             <div class="image-placeholder">
                 <!-- Placeholder for Station Image -->

@@ -1,15 +1,19 @@
-from flask import Flask, jsonify, request
+import os
+
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker, joinedload
 from starlette.status import HTTP_201_CREATED
 from flasgger import Swagger
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 import logging
+from dotenv import load_dotenv
 
+from models import Base, InferenceRequest, PalletType, Status, StationStatus, Station, User
+from seed import seed_database
 
-from models import Base, InferenceRequest, PalletType, Status, StationStatus, Station, User, Image
-
+load_dotenv()
 # Initialize Flask App
 app = Flask(__name__)
 CORS(app)
@@ -26,7 +30,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Database Configuration
-DATABASE_URL = "postgresql+psycopg2://pallet:pallet@timescaledb:5432/warehouse"
+DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -51,6 +55,8 @@ def add_initial_values(session):
     session.commit()
 
 add_initial_values(session)
+
+seed_database(session)
 
 # Backend API Endpoints
 @app.route('/api/inference_requests', methods=['GET'])
@@ -78,18 +84,18 @@ def create_inference_request():
           id: InferenceRequest
           required:
             - station_id
-            - initial_image_id
-            - inferred_image_id
+            - initial_image_path
+            - inferred_image_path
             - request_creation
             - answer_time
             - status_id
           properties:
             station_id:
               type: integer
-            initial_image_id:
-              type: integer
-            inferred_image_id:
-              type: integer
+            initial_image_path:
+              type: string
+            inferred_image_path:
+              type: string
             request_creation:
               type: string
               format: date-time
@@ -114,8 +120,8 @@ def create_inference_request():
         return jsonify({'message': 'Invalid pallet type name'}), 400
     new_request = InferenceRequest(
         station_id=data['station_id'],
-        initial_image_id=data['initial_image_id'],
-        inferred_image_id=data['inferred_image_id'],
+        initial_image_path=data['initial_image_path'],
+        inferred_image_path=data['inferred_image_path'],
         request_creation=data['request_creation'],
         answer_time=data['answer_time'],
         status_id=data['status_id'],
@@ -125,8 +131,6 @@ def create_inference_request():
     app.session.add(new_request)
     app.session.commit()
     return jsonify(new_request.to_dict()), 201
-
-
 
 @app.route('/api/new_installation',methods=['POST'])
 def create_new_install():
@@ -170,41 +174,24 @@ def create_new_install():
     return jsonify({'message': 'New Installation Created', 'id': new_station.id}), HTTP_201_CREATED
 
 
-
-@app.route('/api/upload_image',methods=['POST'])
-def upload_image():
-    """
-    Upload image
-    ---
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          properties:
-            path:
-              type: string
-    responses:
-      201:
-        description: Uploaded image
-    """
-    data = request.json
-    uploaded_image = Image(path=data['path'])
-    session.add(uploaded_image)
-    session.commit()
-    return jsonify({'message': 'Image Uploaded', 'id': uploaded_image.id,'path':uploaded_image.path}), HTTP_201_CREATED
-
-
 @app.route('/api/stations', methods=['GET'])
 def get_stations():
-    stations = Station.query.options(joinedload(Station.station_status)).all()
+    """
+    Get all stations
+    ---
+    responses:
+      200:
+        description: Returns a list of all stations
+    """
+    stations = app.session.query(Station).options(joinedload(Station.station_status)).all()
+
     return jsonify([
         {
-            "station_name": station.station_name,
-            "station_status": station.station_status.stationStatus_name,
+            "station_name": station.name,
+            "station_status": station.station_status.name,
             "status_class": (
-                "text-success" if station.station_status.stationStatus_name == "Ready"
-                else "text-warning" if station.station_status.stationStatus_name == "Processing"
+                "text-success" if station.station_status.name == "Ready"
+                else "text-warning" if station.station_status.name == "Processing"
                 else "text-danger"
             )
         }
@@ -213,6 +200,13 @@ def get_stations():
 
 @app.route('/api/pallet_count', methods=['GET'])
 def pallet_count():
+    """
+    Get all list of inference requests from the last 7 and 30 days
+    ---
+    responses:
+      200:
+        description: Returns a list of all inference requests over the past 7 and 30 days.
+    """
     now = datetime.utcnow()
     seven_days_ago = now - timedelta(days=7)
     thirty_days_ago = now - timedelta(days=30)
@@ -244,6 +238,10 @@ def pallet_count():
     })
 
 
+@app.route('/images/<path:filepath>')
+def serve_image(filepath):
+    """Serve images from the /app/images directory, including subdirectories."""
+    return send_from_directory('/app/images', filepath)
 
 # Run Flask App
 if __name__ == "__main__":

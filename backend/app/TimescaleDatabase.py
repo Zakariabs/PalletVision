@@ -1,5 +1,5 @@
 import psycopg2
-from backend.app.models import Image, Station, InferenceRequest, User
+from backend.app.models import Station, InferenceRequest, User
 
 
 from abc import ABC, abstractmethod
@@ -48,18 +48,6 @@ class FileStorageRepository(ABC):
 
     @abstractmethod
     def update_station_status(self, station_id: int, station_status_id: int) -> None:
-        pass
-
-    @abstractmethod
-    def insert_image(self, image: Image) -> None:
-        pass
-
-    @abstractmethod
-    def fetch_one_image(self, image_id: int) -> Image:
-        pass
-
-    @abstractmethod
-    def fetch_all_images(self) -> List[Image]:
         pass
 
     @abstractmethod
@@ -148,21 +136,6 @@ class TimescaleDBRepository(FileStorageRepository):
         query = "UPDATE Station SET station_status_id = %s WHERE id = %s"
         self.cursor.execute(query, (station_status_id, station_id))
         self.conn.commit()
-
-    def insert_image(self, image: Image) -> None:
-        query = "INSERT INTO Image (path) VALUES (%s)"
-        self.cursor.execute(query, (image.path,))
-        self.conn.commit()
-
-    def fetch_one_image(self, image_id: int) -> Image:
-        query = "SELECT * FROM Image WHERE id = %s"
-        self.cursor.execute(query, (image_id,))
-        return self.cursor.fetchone()
-
-    def fetch_all_images(self) -> List[Image]:
-        query = "SELECT * FROM Image"
-        self.cursor.execute(query)
-        return self.cursor.fetchall()
 
     def delete_image(self, image_id: int) -> None:
         query = "DELETE FROM Image WHERE id = %s"
