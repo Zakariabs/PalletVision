@@ -33,7 +33,6 @@ def process_image(image_path,session):
     API_KEY = os.getenv("API_KEY")
     url = f"https://detect.roboflow.com/pallet-detection-bpx8m-vz3n2/1?api_key={API_KEY}"
     start_date = datetime.now(timezone.utc)
-    print(image_path)
     os.path.relpath("images/")
     inferred_image_path = None
     with open(f"{image_path}","rb") as img_file:
@@ -68,7 +67,6 @@ def process_image(image_path,session):
                     bottom = y + height / 2
                     draw.rectangle([left, top, right, bottom], outline="red", width=2)
                 print("image path pre inferred: ", image_path)
-                inferred_image_path = image_path.split("/",1)[0] + "/inferenced/"+image_path.split("/",1)[1]
             else:
                 prediction_image = Image.fromarray(image)
         else:
@@ -98,6 +96,9 @@ def process_image(image_path,session):
                 confidence_level=result["predictions"][0]["confidence"] if result["predictions"] else 0.0,
                 pallet_type_id=pallet_type.id,
             )
+            station_to_update = session.query(Station).filter_by(id=1).one()
+            station_to_update.station_status_id = 1
+            session.add(station_to_update)
             session.add(inference_request)
             session.commit()
             print(f"Processing image: {image_path}")
