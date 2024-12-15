@@ -36,3 +36,15 @@ services:
       POSTGRES_DB: warehouse
     ports:
       - "5432:5432"
+
+  worker:
+    build: ./backend
+    container_name: worker_container
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://pallet:pallet@timescaledb:5432/warehouse
+      - API_KEY=${API_KEY}
+    volumes:
+      - ./backend/app/ai_model/dataset/test_images:/app/images
+    depends_on:
+      - timescaledb
+    command: ["python", "app/inference_worker.py"]

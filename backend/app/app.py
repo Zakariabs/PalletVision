@@ -39,9 +39,11 @@ app.session = session
 
 # Helper Function: Add Initial Values
 def add_initial_values(session):
-    if not session.query(PalletType).filter_by(name='EPAL').first():
-        epal = PalletType(name='EPAL')
+    if not session.query(PalletType).filter_by(name='euro').first():
+        epal = PalletType(name='euro')
+        other = PalletType(name='Other')
         session.add(epal)
+        session.add(other)
 
     statuses = ['Done', 'Processing', 'Error']
     for status in statuses:
@@ -52,11 +54,24 @@ def add_initial_values(session):
     for status in station_statuses:
         if not session.query(StationStatus).filter_by(name=status).first():
             session.add(StationStatus(name=status))
+
+
+    offline_status = session.query(StationStatus).filter_by(name="Offline").first()
+    if not offline_status:
+        return jsonify({'message': 'Invalid status name'}), 400
+
+    if not session.query(Station).filter_by(name="Warehouse Gold").first():
+        session.add(Station(name="Warehouse Gold",location="Leipzig",station_status_id=offline_status.id))
+
+    if not session.query(User).filter_by(username="admin").first():
+        new_user = User(username="admin")
+        new_user.set_password("admin123")
+        session.add(new_user)
     session.commit()
 
 add_initial_values(session)
 
-seed_database(session)
+# seed_database(session)
 
 # Backend API Endpoints
 @app.route('/api/inference_requests', methods=['GET'])

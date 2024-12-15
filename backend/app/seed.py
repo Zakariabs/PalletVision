@@ -86,7 +86,9 @@ def seed_database(session):
                         seconds=random.randint(0, int((end_date - start_date).total_seconds()))
                     )
                     # Calculate the answer time
-                    answer_time = request_creation + timedelta(seconds=round(data["time"]))
+                    answer_time = request_creation + timedelta(
+                        seconds=random.uniform(0.5, 3)
+                    )
 
                     # Determine the pallet type and request status
                     if data["predictions"]:
