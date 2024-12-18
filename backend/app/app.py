@@ -361,6 +361,10 @@ def get_all_logs():
     logs = app.session.query(LogEntry).all()
     return jsonify([log.to_dict() for log in logs])
 
+@app.route('/health', methods=['GET'])
+def health():
+    return 'OK', 200
+
 # Run Flask App
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')

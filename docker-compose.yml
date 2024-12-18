@@ -1,4 +1,19 @@
 services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    container_name: timescaledb
+    environment:
+      POSTGRES_USER: pallet
+      POSTGRES_PASSWORD: pallet
+      POSTGRES_DB: warehouse
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pallet -h 127.0.0.1 -d warehouse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: ./backend
@@ -12,7 +27,8 @@ services:
     volumes:
       - ./backend/app/ai_model/dataset/test_images:/app/images
     depends_on:
-      - timescaledb
+      timescaledb:
+        condition: service_healthy
 
   frontend:
     build:
@@ -27,17 +43,11 @@ services:
       - NODE_ENV=development
     depends_on:
       - backend
-    command: ["npm", "start"]
-
-  timescaledb:
-    image: timescale/timescaledb:latest-pg14
-    container_name: timescaledb
-    environment:
-      POSTGRES_USER: pallet
-      POSTGRES_PASSWORD: pallet
-      POSTGRES_DB: warehouse
-    ports:
-      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://frontend_container:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   inference_worker:
     build:
@@ -50,5 +60,7 @@ services:
       - ./backend/app/ai_service/images:/app/images:ro
       - ./backend/app/ai_service/inferenced:/app/images/inferenced
     depends_on:
-      - timescaledb
+      frontend:
+        condition: service_healthy
+
     command: ["python", "app/ai_service/app.py"]
