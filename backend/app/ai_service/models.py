@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP, Float
+from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP, Float, DateTime, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import bcrypt
@@ -47,7 +47,7 @@ class Station(Base):
             'status':self.station_status.name
         }
 class User(Base):
-    __tablename__ = 'users'
+    __tablename__ = 'Users'
     id = Column(Integer, primary_key=True)
     username = Column(String(256), unique=True, nullable=False)
     password_hash = Column(String(256), nullable=False)
@@ -88,4 +88,23 @@ class InferenceRequest(Base):
             'status_name': self.status.name if self.status else None,
             'confidence_level': self.confidence_level,
             'pallet_type': self.pallet_type.name if self.pallet_type else None
+        }
+
+class LogEntry(Base):
+    __tablename__ = 'LogEntry'
+    id = Column(Integer, primary_key=True)
+    category = Column(String(50))
+    timestamp = Column(DateTime)
+    detections = Column(JSON)
+    initial_image = Column(String(255))
+    message = Column(String(255))
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'category':self.category,
+            'timestamp':self.timestamp,
+            'detections':self.detections,
+            'initial_image':self.initial_image,
+            'message':self.message
         }

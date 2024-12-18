@@ -12,12 +12,12 @@ const populateTable = (requests) => {
                 <td>${request.pallet_type}</td>
                 <td>
                     ${request.initial_image_path
-                        ? `<img src="${request.initial_image_path.replace('app/ai_model/dataset/test_images/', 'http://localhost:5000/images/')}" alt="Initial Image" class="table-image">`
+                        ? `<img src="${request.initial_image_path.replace('/app/app/ai_service/images/', 'http://localhost:5000/images/')}" alt="Initial Image" class="table-image">`
                         : '<span class="text-muted">No Image</span>'}
                 </td>
                 <td>
                     ${request.inferred_image_path
-                        ? `<img src="${request.inferred_image_path.replace('app/ai_model/dataset/test_images/', 'http://localhost:5000/images/')}" alt="Inferred Image" class="table-image">`
+                        ? `<img src="${request.inferred_image_path.replace('/app/app/ai_service/', 'http://localhost:5000/images/')}" alt="Inferred Image" class="table-image">`
                         : '<span class="text-muted">No Image</span>'}
                 </td>
                 <td>${(request.confidence_level * 100).toFixed(2)}%</td>

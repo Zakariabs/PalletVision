@@ -13,9 +13,9 @@ from sqlalchemy import func, create_engine
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import sessionmaker
 
-from models import *
 import os
 import time
+
 load_dotenv()
 
 
@@ -33,7 +33,7 @@ def process_image(image_path,session):
     API_KEY = os.getenv("API_KEY")
     url = f"https://detect.roboflow.com/pallet-detection-bpx8m-vz3n2/1?api_key={API_KEY}"
     start_date = datetime.now(timezone.utc)
-    os.path.relpath("images/")
+    os.path.relpath("../images/")
     inferred_image_path = None
     with open(f"{image_path}","rb") as img_file:
         result = requests.post(url, files={"file": img_file}).json()
@@ -110,7 +110,7 @@ def check_for_new_images(folder_path, processed_files,session):
             process_image(image_path,session)
             processed_files.add(filename)
 def run_inference_worker(session):
-    folder_to_watch = os.path.relpath("images/")
+    folder_to_watch = os.path.relpath("../images/")
 
     processed_files = set()
     while True:

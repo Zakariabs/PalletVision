@@ -1,12 +1,48 @@
-import os
 import json
+import os
 import random
-from datetime import datetime, timedelta, timezone
-from models import *
+from datetime import datetime, timezone, timedelta
+
+from flask import jsonify
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
-# Seed data
+
+
+
+def add_initial_values(session):
+    from models.models import PalletType, StationStatus, Station, User, Status
+    if not session.query(PalletType).filter_by(name='euro').first():
+        epal = PalletType(name='euro')
+        other = PalletType(name='Other')
+        session.add(epal)
+        session.add(other)
+
+    statuses = ['Done', 'Processing', 'Error']
+    for status in statuses:
+        if not session.query(Status).filter_by(name=status).first():
+            session.add(Status(name=status))
+
+    station_statuses = ['Ready', 'Offline', 'Processing']
+    for status in station_statuses:
+        if not session.query(StationStatus).filter_by(name=status).first():
+            session.add(StationStatus(name=status))
+
+
+    offline_status = session.query(StationStatus).filter_by(name="Offline").first()
+    if not offline_status:
+        return jsonify({'message': 'Invalid status name'}), 400
+
+    if not session.query(Station).filter_by(name="Warehouse Gold").first():
+        session.add(Station(name="Warehouse Gold",location="Leipzig",station_status_id=offline_status.id))
+
+    if not session.query(User).filter_by(username="admin").first():
+        new_user = User(username="admin")
+        new_user.set_password("admin123")
+        session.add(new_user)
+    session.commit()
+
+
 def seed_database(session):
     try:
         # 1. StationStatus
