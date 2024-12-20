@@ -7,4 +7,9 @@ SQLAlchemy==1.4.25
 flasgger==0.9.5
 starlette==0.27.0
 bcrypt==3.2.0
-
+ultralytics
+torch
+Pillow
+torchvision
+inference-sdk==0.31.1
+python-dotenv==1.0.1

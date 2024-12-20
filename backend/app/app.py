@@ -1,16 +1,23 @@
-from flask import Flask, jsonify, request
+import json
+import os
+
+import requests
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from sqlalchemy import create_engine, func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker, joinedload
 from starlette.status import HTTP_201_CREATED
 from flasgger import Swagger
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 import logging
 
 
-from models import Base, InferenceRequest, PalletType, Status, StationStatus, Station, User, Image
+from database_operations import add_initial_values
+from models.models import Base, PalletType, Station, User, StationStatus,InferenceRequest,LogEntry
 
-# Initialize Flask App
+load_dotenv()
 app = Flask(__name__)
 CORS(app)
 swagger = Swagger(app, template={
@@ -21,36 +28,49 @@ swagger = Swagger(app, template={
     }
 })
 
-# Logging Configuration
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 # Database Configuration
-DATABASE_URL = "postgresql+psycopg2://pallet:pallet@timescaledb:5432/warehouse"
+DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 session = Session()
 Base.metadata.create_all(engine)
 app.session = session
 
+logger = logging.getLogger(__name__)
+
+
+class EndpointHandler(logging.Handler):
+    def __init__(self, url):
+        super().__init__()
+        self.url = url
+
+    def emit(self, record):
+        log_entry = {
+            'category': getattr(record, 'category', 'default_category'),
+            'timestamp': getattr(record, 'timestamp', datetime.now()).isoformat(),
+            'detections': getattr(record, 'detections', 'No detections'),
+            'initial_image': getattr(record, 'initial_image', 'No image path'),
+            'message': record.getMessage()
+        }
+        try:
+            requests.post(self.url, json=log_entry)
+        except Exception as e:
+            print(f"Failed to send log entry: {e}")
+
+
+# Create a logger
+logger.setLevel(logging.DEBUG)
+
+# Create an endpoint handler
+endpoint_handler = EndpointHandler('http://localhost:5000/api/logs')
+endpoint_handler.setLevel(logging.INFO)
+
+# Add the handler to the logger
+logger.addHandler(endpoint_handler)
 # Helper Function: Add Initial Values
-def add_initial_values(session):
-    if not session.query(PalletType).filter_by(name='EPAL').first():
-        epal = PalletType(name='EPAL')
-        session.add(epal)
-
-    statuses = ['Done', 'Processing', 'Error']
-    for status in statuses:
-        if not session.query(Status).filter_by(name=status).first():
-            session.add(Status(name=status))
-
-    station_statuses = ['Ready', 'Offline', 'Processing']
-    for status in station_statuses:
-        if not session.query(StationStatus).filter_by(name=status).first():
-            session.add(StationStatus(name=status))
-    session.commit()
-
 add_initial_values(session)
+
+# seed_database(session)
 
 # Backend API Endpoints
 @app.route('/api/inference_requests', methods=['GET'])
@@ -78,18 +98,18 @@ def create_inference_request():
           id: InferenceRequest
           required:
             - station_id
-            - initial_image_id
-            - inferred_image_id
+            - initial_image_path
+            - inferred_image_path
             - request_creation
             - answer_time
             - status_id
           properties:
             station_id:
               type: integer
-            initial_image_id:
-              type: integer
-            inferred_image_id:
-              type: integer
+            initial_image_path:
+              type: string
+            inferred_image_path:
+              type: string
             request_creation:
               type: string
               format: date-time
@@ -112,19 +132,33 @@ def create_inference_request():
 
     if not pallet_type:
         return jsonify({'message': 'Invalid pallet type name'}), 400
-    new_request = InferenceRequest(
-        station_id=data['station_id'],
-        initial_image_id=data['initial_image_id'],
-        inferred_image_id=data['inferred_image_id'],
-        request_creation=data['request_creation'],
-        answer_time=data['answer_time'],
-        status_id=data['status_id'],
-        confidence_level=data['confidence_level'],
-        pallet_type=pallet_type
-    )
-    app.session.add(new_request)
-    app.session.commit()
-    return jsonify(new_request.to_dict()), 201
+    try:
+
+        existing_request = app.session.query(InferenceRequest).filter_by(
+            initial_image_path=data['initial_image_path']).first()
+        if existing_request:
+            return jsonify({'error': 'Inference request already exists.'}), 400
+
+        # Create a new inference request
+        new_request = InferenceRequest(
+            station_id=data['station_id'],
+            initial_image_path=data['initial_image_path'],
+            inferred_image_path=data['inferred_image_path'],
+            request_creation=data['request_creation'],
+            answer_time=data['answer_time'],
+            status_id=data['status_id'],
+            confidence_level=data['confidence_level'],
+            pallet_type=pallet_type
+        )
+        app.session.add(new_request)
+        app.session.commit()
+        return jsonify(new_request.to_dict()), 201
+    except IntegrityError as e:
+        app.session.rollback()
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        app.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 
 
@@ -169,35 +203,17 @@ def create_new_install():
     session.commit()
     return jsonify({'message': 'New Installation Created', 'id': new_station.id}), HTTP_201_CREATED
 
-
-
-@app.route('/api/upload_image',methods=['POST'])
-def upload_image():
-    """
-    Upload image
-    ---
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          properties:
-            path:
-              type: string
-    responses:
-      201:
-        description: Uploaded image
-    """
-    data = request.json
-    uploaded_image = Image(path=data['path'])
-    session.add(uploaded_image)
-    session.commit()
-    return jsonify({'message': 'Image Uploaded', 'id': uploaded_image.id,'path':uploaded_image.path}), HTTP_201_CREATED
-
-
 @app.route('/api/stations', methods=['GET'])
 def get_stations():
-    stations = app.session.query(Station).options(joinedload(Station.station_status)).all() 
+    """
+    Get all stations
+    ---
+    responses:
+      200:
+        description: Returns a list of all stations
+    """
+    stations = app.session.query(Station).options(joinedload(Station.station_status)).all()
+
     return jsonify([
         {
             "station_name": station.name,
@@ -213,6 +229,13 @@ def get_stations():
 
 @app.route('/api/pallet_count', methods=['GET'])
 def pallet_count():
+    """
+    Get all list of inference requests from the last 7 and 30 days
+    ---
+    responses:
+      200:
+        description: Returns a list of all inference requests over the past 7 and 30 days.
+    """
     now = datetime.utcnow()
     seven_days_ago = now - timedelta(days=7)
     thirty_days_ago = now - timedelta(days=30)
@@ -243,7 +266,104 @@ def pallet_count():
         "last_30_days": format_data(last_30_days),
     })
 
+@app.route('/images/<path:filepath>')
+def serve_image(filepath):
+    """Serve images from the /app/images directory, including subdirectories."""
+    return send_from_directory('/app/images', filepath)
 
+@app.route('/api/logs', methods=['POST'])
+def create_log_entry():
+    """
+    Create a new log entry
+    ---
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          id: LogEntry
+          required:
+            - category
+            - timestamp
+            - detections
+            - initial_image
+            - message
+          properties:
+            category:
+              type: string
+              description: The category of the log entry
+              example: inference
+            timestamp:
+              type: string
+              format: date-time
+              description: The timestamp of the log entry
+              example: 2024-12-18T17:45:00Z
+            detections:
+              type: string
+              description: The detections related to the log entry
+              example: "Object detected"
+            initial_image:
+              type: string
+              description: The path to the initial image
+              example: /path/to/image.jpg
+            message:
+              type: string
+              description: The log message
+              example: "Model weights not found"
+    responses:
+      201:
+        description: The created log entry
+        schema:
+          id: LogEntry
+          properties:
+            id:
+              type: integer
+              description: The ID of the log entry
+            category:
+              type: string
+              description: The category of the log entry
+            timestamp:
+              type: string
+              format: date-time
+              description: The timestamp of the log entry
+            detections:
+              type: string
+              description: The detections related to the log entry
+            initial_image:
+              type: string
+              description: The path to the initial image
+            message:
+              type: string
+              description: The log message
+    """
+
+    data = request.json
+    log_entry = LogEntry(
+        category=data['category'],
+        timestamp=datetime.fromisoformat(data['timestamp']),
+        detections=json.dumps(getattr(data, 'detections', 'No detections')),
+        initial_image=data['initial_image'],
+        message=data['message']
+    )
+    session.add(log_entry)
+    session.commit()
+    return jsonify({'message': 'Log entry created successfully'}), 201
+
+@app.route('/api/logs',methods=['GET'])
+def get_all_logs():
+    """
+    Get all logs entries
+    ---
+    responses:
+      200:
+        description: Returns a list of all log entries
+    """
+    logs = app.session.query(LogEntry).all()
+    return jsonify([log.to_dict() for log in logs])
+
+@app.route('/health', methods=['GET'])
+def health():
+    return 'OK', 200
 
 # Run Flask App
 if __name__ == "__main__":

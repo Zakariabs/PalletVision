@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     // Fetch and render pallet count chart
-    fetch('/api/pallet_count')
+    fetch('http://127.0.0.1:5000/api/pallet_count')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Failed to fetch chart data');
@@ -10,12 +10,11 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             // Prepare data for last 7 days
             const last7DaysData = data.last_7_days.map(item => item.count);
-            const last7DaysLabels = data.last_7_days.map(item => item.pallet_type);
+            const last7DaysLabels = data.last_7_days.map(item => item.pallet_type ?? 'Unknown');
 
             // Prepare data for last 30 days
             const last30DaysData = data.last_30_days.map(item => item.count);
-            const last30DaysLabels = data.last_30_days.map(item => item.pallet_type);
-
+            const last30DaysLabels = data.last_30_days.map(item => item.pallet_type ?? 'Unknown');
             // Chart options for last 7 days
             const options7Days = {
                 chart: {
@@ -58,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
     // Fetch and render station statuses
-    fetch('/api/stations')
+    fetch('http://127.0.0.1:5000/api/stations')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Failed to fetch station data');
