@@ -103,6 +103,10 @@ footer {
 }
 
 /* Button stylings */
+.btn-primary {
+    background-color: var(--text-primary); /* Highlight color */
+    color: var(--dark-bg); /* Contrast text */
+}
 .btn-primary:hover {
     background-color: var(--secondary-bg) ; /* Highlight color */
     color: var(--text-focus) ; /* Contrast text */

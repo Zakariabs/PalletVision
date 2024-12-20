@@ -65,6 +65,8 @@ document.addEventListener("DOMContentLoaded", function () {
             return response.json();
         })
         .then(stations => {
+            console.log('Stations API Response:', stations); // Log the received data for debugging
+
             const stationTableBody = document.querySelector("#stationStatusTable tbody");
             stationTableBody.innerHTML = ''; // Clear any existing rows
 
@@ -73,6 +75,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 row.innerHTML = `
                     <td>${station.station_name}</td>
                     <td class="${station.status_class}">${station.station_status}</td>
+                    <td>
+                        <a href="stationDetails.html?station_id=${station.station_id}" class="btn btn-primary btn-sm">View Details</a>
+                    </td>
                 `;
                 stationTableBody.appendChild(row);
             });

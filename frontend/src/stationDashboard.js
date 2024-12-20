@@ -1,6 +1,18 @@
 let inferenceRequestsData = [];
 let stationsData = [];
 
+// Utility function to get URL query parameters
+const getQueryParam = (key) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(key);
+};
+
+// Get the station_id from the URL query parameters
+const stationId = getQueryParam('station_id');
+
+
+
+
 // Function to populate the table
 const populateTable = (requests) => {
     const tableBody = document.getElementById('inference-requests');
@@ -27,80 +39,49 @@ const populateTable = (requests) => {
     });
 };
 
-// Function to filter and display station details
-const updateStationDetails = (selectedStationName) => {
-    const stationNameElement = document.getElementById('station-name');
-    const stationInfoElement = document.getElementById('station-info');
-    const stationStatusElement = document.getElementById('station-status');
-    const statusIndicatorElement = stationStatusElement.querySelector('.status-indicator');
+// Function to fetch and display station details
+const fetchStationDetails = (stationId) => {
+    fetch(`http://127.0.0.1:5000/api/stations/${stationId}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to fetch station details');
+            return response.json();
+        })
 
-    if (selectedStationName) {
-        const selectedStationData = stationsData.find(station => station.station_name === selectedStationName);
-        if (selectedStationData) {
-            stationNameElement.textContent = selectedStationData.station_name;
-            statusIndicatorElement.textContent = selectedStationData.station_status;
-            stationStatusElement.className = `status-box p-3 rounded text-white ${selectedStationData.status_class}`;
+        .then(station => {
+            // Update station details
+            const stationNameElement = document.getElementById('station-name');
+            const stationInfoElement = document.getElementById('station-info');
+            const stationStatusElement = document.getElementById('station-status');
+            const statusIndicatorElement = stationStatusElement.querySelector('.status-indicator');
 
-            stationNameElement.style.display = 'block';
+            stationNameElement.textContent = station.station_name;
+            statusIndicatorElement.textContent = station.station_status;
+            stationStatusElement.className = `status-box p-3 rounded text-white ${station.status_class}`;
+
             stationInfoElement.style.display = 'flex';
             statusIndicatorElement.style.display = 'inline';
-        }
-    } else {
-        stationNameElement.textContent = 'Stations';
-        stationNameElement.style.display = 'block';
-        stationInfoElement.style.display = 'none';
-        statusIndicatorElement.style.display = 'none'; // Hide the status text
-    }
+        })
+        .catch(error => console.error('Error fetching station details:', error));
 };
 
-// Event listener for the station dropdown change
-const onStationChange = (event) => {
-    const selectedStationName = event.target.value;
-
-    // Update station details
-    updateStationDetails(selectedStationName);
-
-    // Filter and display the inference requests
-    const filteredRequests = selectedStationName
-        ? inferenceRequestsData.filter(request => request.station_name === selectedStationName)
-        : inferenceRequestsData;
-
-    populateTable(filteredRequests);
+// Function to fetch and display inference requests for a specific station
+const fetchInferenceRequests = (stationId) => {
+    fetch(`http://127.0.0.1:5000/api/stations/${stationId}/inference_requests`)
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to fetch inference requests');
+            return response.json();
+        })
+        .then(requests => {
+            populateTable(requests); // Populate table with filtered requests
+        })
+        .catch(error => console.error('Error fetching inference requests:', error));
 };
 
-// Fetch stations and populate the dropdown
-fetch('http://127.0.0.1:5000/api/stations')
-    .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch station data');
-        return response.json();
-    })
-    .then(stations => {
-        stationsData = stations; // Store the data in a global variable
-        const stationSelect = document.getElementById('station-select');
-        stationSelect.innerHTML = '<option value="">All Stations</option>'; // Add default option
+// Check if station_id exists and fetch details
+if (stationId) {
+    fetchStationDetails(stationId); // Fetch and display station details
+    fetchInferenceRequests(stationId); // Fetch and display inference requests
+} else {
+    console.error('No station_id provided in the URL');
+}
 
-        stations.forEach(station => {
-            const option = document.createElement('option');
-            option.value = station.station_name;
-            option.textContent = `${station.station_name} (${station.station_status})`;
-            stationSelect.appendChild(option);
-        });
-
-        // Attach event listener once after stations are loaded
-        stationSelect.addEventListener('change', onStationChange);
-    })
-    .catch(error => console.error('Error fetching station data:', error));
-
-// Fetch inference requests and populate the table
-fetch('http://127.0.0.1:5000/api/inference_requests')
-    .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch inference requests');
-        return response.json();
-    })
-    .then(data => {
-        inferenceRequestsData = data; // Store the data in a global variable
-
-        // Populate table with all requests
-        populateTable(data);
-    })
-    .catch(error => console.error('Error fetching inference requests data:', error));
