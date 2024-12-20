@@ -41,12 +41,11 @@ const populateTable = (requests) => {
 
 // Function to fetch and display station details
 const fetchStationDetails = (stationId) => {
-    fetch(`http://127.0.0.1:5000/api/stations/${stationId}`)
+    return fetch(`http://127.0.0.1:5000/api/stations/${stationId}`)
         .then(response => {
             if (!response.ok) throw new Error('Failed to fetch station details');
             return response.json();
         })
-
         .then(station => {
             // Update station details
             const stationNameElement = document.getElementById('station-name');
@@ -60,8 +59,13 @@ const fetchStationDetails = (stationId) => {
 
             stationInfoElement.style.display = 'flex';
             statusIndicatorElement.style.display = 'inline';
+
+            return station;
         })
-        .catch(error => console.error('Error fetching station details:', error));
+        .catch(error => {
+            console.error('Error fetching station details:', error)
+            throw error;
+        });
 };
 
 // Function to fetch and display inference requests for a specific station
@@ -77,9 +81,50 @@ const fetchInferenceRequests = (stationId) => {
         .catch(error => console.error('Error fetching inference requests:', error));
 };
 
-// Check if station_id exists and fetch details
+
+// Function to update the image placeholder based on the station's status and available image
+const updateStationImage = (stationId, stationStatus) => {
+    const imageBox = document.querySelector('.image-box');
+    const placeholderContainer = document.querySelector('.image-placeholder');
+
+    if (stationStatus === "Offline") {
+        // Hide the placeholder entirely for Offline status
+        placeholderContainer.style.display = 'none';
+        return;
+    }
+
+    // Fetch the current image based on station ID
+    fetch(`http://127.0.0.1:5000/api/stations/${stationId}/current_image`)
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to fetch current image');
+            return response.json();
+        })
+        .then(data => {
+            if (data.image) {
+                // Display the image
+                imageBox.innerHTML = `
+                    <img src="${data.image}" alt="Station Image" class="station-image">
+                    <p class="text-muted">${stationStatus === "Processing" ? "Waiting for answer" : "Last processed image"}</p>
+                `;
+                placeholderContainer.style.display = 'block'; // Ensure the box is visible
+            } else {
+                // Hide the image box if no image is available
+                placeholderContainer.style.display = 'none';
+            }
+        })
+        .catch(error => console.error('Error fetching station image:', error));
+};
+
+
 if (stationId) {
-    fetchStationDetails(stationId); // Fetch and display station details
+    fetchStationDetails(stationId)// Fetch and display station details
+        .then(stationDetails => {
+            const stationStatus=stationDetails.station_status;
+            updateStationImage(stationId, stationStatus);
+        }) 
+        .catch(error => {
+            console.error('Error processing station details:', error)
+        });
     fetchInferenceRequests(stationId); // Fetch and display inference requests
 } else {
     console.error('No station_id provided in the URL');
