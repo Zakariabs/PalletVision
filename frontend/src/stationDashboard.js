@@ -39,6 +39,7 @@ const populateTable = (requests) => {
     });
 };
 
+
 // Function to fetch and display station details
 const fetchStationDetails = (stationId) => {
     return fetch(`http://127.0.0.1:5000/api/stations/${stationId}`)
