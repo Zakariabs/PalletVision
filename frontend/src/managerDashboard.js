@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", function () {
             return response.json();
         })
         .then(data => {
+            console.log('Pallet Count API Response:', data);
+
             // Prepare data for last 7 days
             const last7DaysData = data.last_7_days.map(item => item.count);
             const last7DaysLabels = data.last_7_days.map(item => item.pallet_type ?? 'Unknown');

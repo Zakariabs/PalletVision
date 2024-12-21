@@ -90,36 +90,50 @@ def seed_database(session):
 
         session.commit()
 
-        # Images and inference requests
+        # Images for inference requests
         initial_image_dir = "app/ai_model/dataset/test_images"
         inferred_image_dir = "app/ai_model/dataset/test_images/inferenced"
 
+        # Filter `.json` files
+        json_files = [f for f in os.listdir(inferred_image_dir) if f.endswith(".json")]
+
+       
+        # Fetch all station IDs for inference request
         station_ids = [station.id for station in session.query(Station).all()]  # Fetch all station IDs
 
-        for file in os.listdir(inferred_image_dir):
-            if file.endswith(".json"): #select data from json file only
+        # Generate request creation and answer times
+        start_date = datetime.now(timezone.utc) - timedelta(days=45) #not earlier than 45 days ago
+        end_date = datetime.now(timezone.utc) #end date now
+              
+        total_requests = len(json_files)  # Number of requests to seed
+
+        # Generate ordered timestamps
+        if total_requests > 0:
+            time_interval = (end_date - start_date) / total_requests  # Evenly spaced intervals
+            ordered_timestamps = [start_date + i * time_interval for i in range(total_requests)]
+
+            for i in range(len(ordered_timestamps)): #add random noise to timestamps
+                ordered_timestamps[i] += timedelta(seconds=random.randint(-3600, 3600))  # +/- 1 hour
+            ordered_timestamps.sort()  # Ensure timestamps are still ordered
+
+            # Assign these timestamps during seeding
+            for idx, file in enumerate(json_files):
                 with open(os.path.join(inferred_image_dir, file)) as f:
                     data = json.load(f)
-
-                # Get image filenames
+            
+                # Assign ordered timestamp
+                request_creation = ordered_timestamps[idx]
+                answer_time = request_creation + timedelta(seconds=random.uniform(0.5, 3)) 
+        
+                #add image to requets
                 initial_image_name = f'image_{file.split("_")[-1].split(".")[0]}.png'
-                inferred_image_name = f'inferenced_image_{file.split("_")[-1].split(".")[0]}.png'
+                inferred_image_name = f'inferenced_image_{file.split("_")[-1].split(".")[0]}.png'   
 
                 # Ensure images exist
                 if not os.path.exists(os.path.join(initial_image_dir, initial_image_name)) or \
                         not os.path.exists(os.path.join(inferred_image_dir, inferred_image_name)):
                     print(f"Skipping request {file} due to missing image: {initial_image_name} or {inferred_image_name}")
                     continue
-
-                # Generate request creation and answer times
-                start_date = datetime.now(timezone.utc) - timedelta(days=45) #not earlier than 45 days ago
-                end_date = datetime.now(timezone.utc) #end date now
-
-                request_creation = start_date + timedelta(
-                    seconds=random.randint(0, int((end_date - start_date).total_seconds()))
-                )
-                answer_time = request_creation + timedelta(seconds=random.uniform(0.5, 3))
-
 
                 # Determine the pallet type and request status
                 if data["predictions"]:
