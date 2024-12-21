@@ -1,22 +1,49 @@
-import os
 import json
+import os
 import random
-from datetime import datetime, timedelta, timezone
-from app.models import (
-    Base, StationStatus, Status, PalletType, Station, User, Image, InferenceRequest
-)
-from sqlalchemy import create_engine, func
-from sqlalchemy.orm import sessionmaker
+from datetime import datetime, timezone, timedelta
+
+from flask import jsonify
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
-DATABASE_URL = "postgresql+psycopg2://pallet:pallet@timescaledb:5432/warehouse"
 
-engine = create_engine(DATABASE_URL)
-Session = sessionmaker(bind=engine)
-session = Session()
 
-# Seed data
-def seed_database():
+
+def add_initial_values(session):
+    from models.models import PalletType, StationStatus, Station, User, Status
+    if not session.query(PalletType).filter_by(name='euro').first():
+        epal = PalletType(name='euro')
+        other = PalletType(name='Other')
+        session.add(epal)
+        session.add(other)
+
+    statuses = ['Done', 'Processing', 'Error']
+    for status in statuses:
+        if not session.query(Status).filter_by(name=status).first():
+            session.add(Status(name=status))
+
+    station_statuses = ['Ready', 'Offline', 'Processing']
+    for status in station_statuses:
+        if not session.query(StationStatus).filter_by(name=status).first():
+            session.add(StationStatus(name=status))
+
+
+    offline_status = session.query(StationStatus).filter_by(name="Offline").first()
+    if not offline_status:
+        return jsonify({'message': 'Invalid status name'}), 400
+
+    if not session.query(Station).filter_by(name="Warehouse Gold").first():
+        session.add(Station(name="Warehouse Gold",location="Leipzig",station_status_id=offline_status.id))
+
+    if not session.query(User).filter_by(username="admin").first():
+        new_user = User(username="admin")
+        new_user.set_password("admin123")
+        session.add(new_user)
+    session.commit()
+
+
+def seed_database(session):
     try:
         # 1. StationStatus
         station_statuses = ['Offline', 'Ready', 'Processing']
@@ -64,30 +91,11 @@ def seed_database():
         session.commit()
 
         # 6. Images
-        initial_image_dir = "backend/app/ai_model/dataset/test_images"
-        inferred_image_dir = "backend/app/ai_model/dataset/test_images/inferenced"
-        image_map = {}
-
-        # Add initial images
-        for file in os.listdir(initial_image_dir):
-            if file.endswith(".png"):
-                path = os.path.join(initial_image_dir, file)
-                image = Image(path=path)
-                session.add(image)
-                session.commit()
-                image_map[file] = image.id
-
-        # Add inferred images
-        for file in os.listdir(inferred_image_dir):
-            if file.endswith(".png"):
-                path = os.path.join(inferred_image_dir, file)
-                image = Image(path=path)
-                session.add(image)
-                session.commit()
-                image_map[file] = image.id
+        initial_image_dir = "app/ai_model/dataset/test_images"
+        inferred_image_dir = "app/ai_model/dataset/test_images/inferenced"
 
         # 7. InferenceRequests
-        json_dir = "backend/app/ai_model/dataset/test_images/inferenced"
+        json_dir = "app/ai_model/dataset/test_images/inferenced"
         station_ids = [station.id for station in session.query(Station).all()]  # Fetch all station IDs
 
         for file in os.listdir(json_dir):
@@ -98,12 +106,11 @@ def seed_database():
                     # Get image names
                     initial_image_name = f'image_{file.split("_")[-1].split(".")[0]}.png'
                     inferred_image_name = f'inferenced_image_{file.split("_")[-1].split(".")[0]}.png'
-
                     # Ensure images exist
-                    initial_image_id = image_map.get(initial_image_name)
-                    inferred_image_id = image_map.get(inferred_image_name)
+                    initial_image_path = os.path.join(initial_image_dir,initial_image_name)
+                    inferred_image_path = os.path.join(inferred_image_dir,inferred_image_name)
 
-                    if initial_image_id is None or inferred_image_id is None:
+                    if initial_image_path is None or inferred_image_path is None:
                         print(f"Skipping request {file} due to missing image: {initial_image_name} or {inferred_image_name}")
                         continue
 
@@ -115,14 +122,16 @@ def seed_database():
                         seconds=random.randint(0, int((end_date - start_date).total_seconds()))
                     )
                     # Calculate the answer time
-                    answer_time = request_creation + timedelta(seconds=round(data["time"]))
+                    answer_time = request_creation + timedelta(
+                        seconds=random.uniform(0.5, 3)
+                    )
 
                     # Determine the pallet type and request status
                     if data["predictions"]:
                         pallet_class = data["predictions"][0]["class"]
                         pallet_type = session.query(PalletType).filter(func.lower(PalletType.name) == pallet_class.lower()).first() # Compare normalized names
                         # If the pallet type does not exist, add it to the database
-                        if not pallet_type: 
+                        if not pallet_type:
                             pallet_type = PalletType(name=pallet_class.capitalize()) # Normalize the name
                             session.add(pallet_type)
                             session.commit()
@@ -137,8 +146,8 @@ def seed_database():
 
                     inference_request = InferenceRequest(
                         station_id=random_station_id,  # Randomly assign a station
-                        initial_image_id=image_map.get(initial_image_name),
-                        inferred_image_id=image_map.get(inferred_image_name),
+                        initial_image_path=initial_image_path,
+                        inferred_image_path=inferred_image_path,
                         request_creation=request_creation,
                         answer_time=answer_time,
                         status_id=status_id,
@@ -153,6 +162,3 @@ def seed_database():
     except IntegrityError: # Catch IntegrityError exceptions if data already exists
         session.rollback()
         print("Database already seeded or duplicate entry detected. Skipping this step...")
-
-if __name__ == "__main__":
-    seed_database()

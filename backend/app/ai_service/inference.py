@@ -18,7 +18,6 @@ class YoloInference:
 
         # Run inference using the new API
         results = self.model(image_path)
-        
         # Process the first result (since we're only processing one image)
         result = results[0]
         
@@ -60,7 +59,7 @@ class YoloInference:
         pil_img.save(output_path)
 
         if not detections:
-            return {"error": "No pallet detected", "output_path": output_path}, 404
+            return {"error": "No pallet detected", "inferenced_image_path": output_path}, 404
 
         return {
             "inferenced_image_path": output_path,

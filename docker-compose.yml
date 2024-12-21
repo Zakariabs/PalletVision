@@ -1,35 +1,4 @@
-version: '3.8'
-
 services:
-  backend:
-    build: ./backend
-    container_name: backend_container
-    environment:
-      - FLASK_ENV=development
-      - DATABASE_URL=postgresql+psycopg2://pallet:pallet@timescaledb:5432/warehouse
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./backend/app/static:/app/static
-    depends_on:
-      - timescaledb
-      - redis
-
-  frontend:
-    build: ./frontend
-    container_name: frontend_container
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend/public:/frontend/public  # Ensure local files are mapped correctly
-    environment:
-      - NODE_ENV=development
-    depends_on:
-      - backend
-    command: ["npm", "start"]  # Automatically start the frontend dev server
-
-
-
   timescaledb:
     image: timescale/timescaledb:latest-pg14
     container_name: timescaledb
@@ -39,9 +8,65 @@ services:
       POSTGRES_DB: warehouse
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pallet -h 127.0.0.1 -d warehouse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  redis:
-    image: redis:latest
-    container_name: redis_container
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    container_name: backend_container
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql+psycopg2://pallet:pallet@timescaledb:5432/warehouse
     ports:
-      - "6379:6379"
+      - "5000:5000"
+    volumes:
+      - ./backend/app/ai_model/dataset/test_images:/app/images
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://127.0.0.1:5000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: frontend_container
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/public:/frontend/public
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://frontend_container:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  inference_worker:
+    build:
+      context: ./backend/
+      dockerfile: app/ai_service/Dockerfile.inference_worker
+    container_name: inference
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://pallet:pallet@timescaledb:5432/warehouse
+    volumes:
+      - ./backend/app/ai_service/images:/app/images:ro
+      - ./backend/app/ai_service/inferenced:/app/images/inferenced
+    depends_on:
+      frontend:
+        condition: service_healthy
+
+    command: ["python", "app/ai_service/app.py"]

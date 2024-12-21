@@ -5,6 +5,7 @@ module.exports = {
         index: './src/index.js', // Entry file for the main index page
         managerDashboard: './src/managerDashboard.js', // Entry for the Manager Dashboard
         stationDashboard: './src/stationDashboard.js', // Entry for the Station Dashboard
+        efficiencyDashboard: './src/efficiencyDashboard.js', // Entry for the Station Dashboard
     },
     output: {
         filename: '[name].bundle.js', // Output filename pattern: index.bundle.js, managerDashboard.bundle.js, etc.
