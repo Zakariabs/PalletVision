@@ -85,6 +85,8 @@ def get_inference_requests():
     requests = app.session.query(InferenceRequest).all()
     return jsonify([request.to_dict() for request in requests])
 
+
+
 @app.route('/api/inference_requests', methods=['POST'])
 def create_inference_request():
     """
@@ -216,16 +218,103 @@ def get_stations():
 
     return jsonify([
         {
-            "station_name": station.name,
-            "station_status": station.station_status.name,
-            "status_class": (
-                "text-success" if station.station_status.name == "Ready"
-                else "text-warning" if station.station_status.name == "Processing"
-                else "text-danger"
-            )
+          "station_id": station.id, 
+          "station_name": station.name,
+          "station_status": station.station_status.name,
+          "status_class": (
+              "text-success" if station.station_status.name == "Ready"
+              else "text-warning" if station.station_status.name == "Processing"
+              else "text-danger"
+          )
         }
         for station in stations
     ])
+
+@app.route('/api/stations/<int:station_id>', methods=['GET'])
+def get_station_by_id(station_id):
+    """
+    Get a specific station by its ID
+    ---
+    parameters:
+      - name: station_id
+        in: path
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Returns details of a specific station
+    """
+    station = app.session.query(Station).options(joinedload(Station.station_status)).filter_by(id=station_id).first()
+    if not station:
+        return jsonify({'error': 'Station not found'}), 404
+
+    return jsonify({
+        "station_id": station.id,
+        "station_name": station.name,
+        "station_status": station.station_status.name if station.station_status else "Unknown",
+        "status_class": (
+            "text-success" if station.station_status and station.station_status.name == "Ready"
+            else "text-warning" if station.station_status and station.station_status.name == "Processing"
+            else "text-danger"
+        )
+    })
+
+@app.route('/api/stations/<int:station_id>/current_image', methods=['GET'])
+def get_current_image(station_id):
+    """
+    Get the current image for a station based on its status
+    """
+    station = app.session.query(Station).options(joinedload(Station.station_status)).filter_by(id=station_id).first()
+    if not station:
+        return jsonify({'error': 'Station not found'}), 404
+
+    station_status = station.station_status.name if station.station_status else None
+
+    if station_status == "Offline":
+        return jsonify({'image': None})  # No image if offline
+
+    if station_status == "Processing":
+        request = (
+            app.session.query(InferenceRequest)
+            .filter_by(station_id=station_id, answer_time=None)
+            .order_by(InferenceRequest.request_creation.desc())
+            .first()
+        )
+        if request and request.initial_image_path:
+            return jsonify({'image': f"/images/{os.path.basename(request.initial_image_path)}"})
+
+    request = (
+        app.session.query(InferenceRequest)
+        .filter(InferenceRequest.station_id == station_id, InferenceRequest.answer_time.isnot(None))
+        .order_by(InferenceRequest.answer_time.desc())
+        .first()
+    )
+    if request and request.inferred_image_path:
+        return jsonify({'image': f"/images/{os.path.basename(request.inferred_image_path)}"})
+
+    return jsonify({'image': None})
+
+
+@app.route('/api/stations/<int:station_id>/inference_requests', methods=['GET'])
+def get_inference_requests_by_station(station_id):
+    """
+    Get inference requests for a specific station
+    ---
+    parameters:
+      - name: station_id
+        in: path
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Returns a list of inference requests for a specific station
+    """
+    requests = (
+        app.session.query(InferenceRequest)
+        .filter_by(station_id=station_id)
+        .all()
+    )
+    return jsonify([request.to_dict() for request in requests])
 
 @app.route('/api/pallet_count', methods=['GET'])
 def pallet_count():
