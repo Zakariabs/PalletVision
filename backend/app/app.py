@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 import logging
 
 
-from database_operations import add_initial_values
+from database_operations import add_initial_values, seed_database
 from models.models import Base, PalletType, Station, User, StationStatus,InferenceRequest,LogEntry
 
 load_dotenv()
@@ -67,10 +67,11 @@ endpoint_handler.setLevel(logging.INFO)
 
 # Add the handler to the logger
 logger.addHandler(endpoint_handler)
-# Helper Function: Add Initial Values
-add_initial_values(session)
 
-# seed_database(session)
+# Helper Function: Add Initial Values
+#add_initial_values(session)
+
+seed_database(session)
 
 # Backend API Endpoints
 @app.route('/api/inference_requests', methods=['GET'])
