@@ -2,7 +2,6 @@
 const populateLogsTable = (logs) => {
     const tableBody = document.getElementById('logs');
     tableBody.innerHTML = ''; // Clear existing rows
-
     logs.forEach(log => {
         const row = `
             <tr>
@@ -24,7 +23,12 @@ const populateLogsTable = (logs) => {
 
 // Function to fetch logs
 const fetchLogs = () => {
-    fetch('http://127.0.0.1:5000/api/logs')
+    const token = localStorage.getItem('jwtToken');
+    fetch('http://127.0.0.1:5000/api/logs', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Failed to fetch logs');

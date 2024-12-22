@@ -1,6 +1,6 @@
 let inferenceRequestsData = [];
 let stationsData = [];
-
+const token = localStorage.getItem('jwtToken');
 
 
 // Function to populate the table
@@ -33,7 +33,11 @@ const populateTable = (requests) => {
 
 // Function to fetch and display inference requests
 const fetchInferenceRequests =() => {
-    fetch(`http://127.0.0.1:5000/api/inference_requests`)
+    fetch('http://127.0.0.1:5000/api/inference_requests',{
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
         .then(response => {
             if (!response.ok) throw new Error('Failed to fetch inference requests');
             return response.json();

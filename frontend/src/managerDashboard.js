@@ -37,23 +37,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 colors: ['#008FFB', '#00E396', '#000000', '#FF4560'],
             };
-        // Prepare data for last 30 days
-        const last30DaysData = data.last_30_days.map(item => item.count);
-        const last30DaysLabels = data.last_30_days.map(item => item.pallet_type ?? 'Unknown');
-        // Chart options for last 7 days
-        const options7Days = {
-            chart: {
-                type: 'donut',
-                height: 250,
-            },
-            series: last7DaysData,
-            labels: last7DaysLabels,
-            title: {
-                text: 'Pallet Count - Last 7 Days',
-                align: 'center',
-            },
-            colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560'],
-        };
 
             // Chart options for last 30 days
             const options30Days = {

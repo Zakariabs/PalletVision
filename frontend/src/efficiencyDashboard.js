@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const token = localStorage.getItem('jwtToken');
     const past30DayRequestElement = document.querySelector('.card-body h3.text-warning');
     const confidenceRateElement = document.querySelectorAll('.card-body h3.text-warning')[1];
-    const processingTimeElement = document.querySelector('.gauge-box p.display-4');
     // Element references based on updated IDs
     const processedTodayElement = document.querySelector('#processedToday');
     const meanConfidenceElement = document.querySelector('#meanConfidence');

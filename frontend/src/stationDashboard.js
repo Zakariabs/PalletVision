@@ -11,7 +11,6 @@ const getQueryParam = (key) => {
 // Get the station_id from the URL query parameters
 const stationId = getQueryParam('station_id');
 
-
 // Function to populate the table
 const populateTable = (requests) => {
     const tableBody = document.getElementById('inference-requests');
@@ -38,10 +37,13 @@ const populateTable = (requests) => {
     });
 };
 
-
 // Function to fetch and display station details
 const fetchStationDetails = (stationId) => {
-    return fetch(`http://127.0.0.1:5000/api/stations/${stationId}`)
+    return fetch(`http://127.0.0.1:5000/api/stations/${stationId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
         .then(response => {
             if (!response.ok) throw new Error('Failed to fetch station details');
             return response.json();
@@ -70,7 +72,7 @@ const fetchStationDetails = (stationId) => {
 
 // Function to fetch and display inference requests for a specific station
 const fetchInferenceRequests = (stationId) => {
-    fetch('http://127.0.0.1:5000/api/stations/${stationId}/inference_requests',{
+    fetch(`http://127.0.0.1:5000/api/stations/${stationId}/inference_requests`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -85,7 +87,6 @@ const fetchInferenceRequests = (stationId) => {
         .catch(error => console.error('Error fetching inference requests:', error));
 };
 
-
 // Function to update the image placeholder based on the station's status and available image
 const updateStationImage = (stationId, stationStatus) => {
     const imageBox = document.querySelector('.image-box');
@@ -98,7 +99,7 @@ const updateStationImage = (stationId, stationStatus) => {
     }
 
     // Fetch the current image based on station ID
-    fetch('http://127.0.0.1:5000/api/stations/${stationId}/current_image',{
+    fetch(`http://127.0.0.1:5000/api/stations/${stationId}/current_image`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -123,11 +124,10 @@ const updateStationImage = (stationId, stationStatus) => {
         .catch(error => console.error('Error fetching station image:', error));
 };
 
-
 if (stationId) {
-    fetchStationDetails(stationId)// Fetch and display station details
+    fetchStationDetails(stationId) // Fetch and display station details
         .then(stationDetails => {
-            const stationStatus=stationDetails.station_status;
+            const stationStatus = stationDetails.station_status;
             updateStationImage(stationId, stationStatus);
         })
         .catch(error => {
@@ -137,4 +137,3 @@ if (stationId) {
 } else {
     console.error('No station_id provided in the URL');
 }
-
