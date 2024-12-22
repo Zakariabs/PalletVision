@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP, Float, DateTime, JSON
+from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP, Float, DateTime, JSON, Text, \
+    PrimaryKeyConstraint, UniqueConstraint, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import bcrypt
@@ -61,19 +62,27 @@ class User(Base):
 
 class InferenceRequest(Base):
     __tablename__ = 'InferenceRequest'
-    request_id = Column(Integer, primary_key=True)
+
+    request_id = Column(Integer, primary_key=True, autoincrement=True)
     station_id = Column(Integer, ForeignKey('Station.id'), nullable=False)
-    initial_image_path  = Column(String(256), unique=True, nullable=False)
-    inferred_image_path  = Column(String(256), unique=True)
-    request_creation = Column(TIMESTAMP, nullable=False)
-    answer_time = Column(TIMESTAMP)
+    initial_image_path = Column(Text, unique=True, nullable=False)
+    inferred_image_path = Column(Text, unique=True)
+    request_creation = Column(TIMESTAMP(timezone=True), nullable=False)
+    answer_time = Column(TIMESTAMP(timezone=True))
     status_id = Column(Integer, ForeignKey('Status.id'), nullable=False)
     confidence_level = Column(Float)
     pallet_type_id = Column(Integer, ForeignKey('PalletType.id'))
-
+    timestamp = Column(TIMESTAMP(timezone=True), nullable=False,server_default=func.now())
     station = relationship('Station')
     status = relationship('Status')
     pallet_type = relationship('PalletType')
+
+    __table_args__ = (
+        PrimaryKeyConstraint('request_id', 'timestamp', name='inferencerequest_pkey'),
+        UniqueConstraint('initial_image_path', 'timestamp', name='uq_initial_image_path'),
+        UniqueConstraint('inferred_image_path', 'timestamp', name='uq_inferred_image_path')
+    )
+
 
     def to_dict(self):
         return {
@@ -87,21 +96,24 @@ class InferenceRequest(Base):
             'status_id': self.status_id,
             'status_name': self.status.name if self.status else None,
             'confidence_level': self.confidence_level,
-            'pallet_type': self.pallet_type.name if self.pallet_type else None
+            'pallet_type': self.pallet_type.name if self.pallet_type else None,
+            'timestamp': self.timestamp.isoformat() if self.timestamp else None,
         }
 
 class LogEntry(Base):
     __tablename__ = 'LogEntry'
-    id = Column(Integer, primary_key=True)
-    category = Column(String(50))
-    timestamp = Column(DateTime)
-    detections = Column(JSON)
-    initial_image = Column(String(255))
-    message = Column(String(255))
+    category = Column(Text, nullable=False)
+    timestamp = Column(TIMESTAMP(timezone=True), nullable=False,server_default=func.now(), primary_key=True)
+    detections = Column(JSON, nullable=True)
+    initial_image = Column(Text, nullable=True)
+    message = Column(Text, nullable=True)
+
+    __table_args__ = (
+        PrimaryKeyConstraint('timestamp', name='logentry_pkey'),
+    )
 
     def to_dict(self):
         return {
-            'id': self.id,
             'category':self.category,
             'timestamp':self.timestamp,
             'detections':self.detections,

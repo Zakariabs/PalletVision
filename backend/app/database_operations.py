@@ -42,8 +42,23 @@ def add_initial_values(session):
         session.add(new_user)
     session.commit()
 
+def add_retention_policy(session):
+    result = session.execute(
+        "SELECT * FROM timescaledb_information.hypertables WHERE hypertable_name = 'LogEntry';")
+    if not result.fetchone():
+        session.execute('SELECT create_hypertable(\'public."LogEntry"\', \'timestamp\');')
+        session.commit()
+
+    result = session.execute(
+        "SELECT * FROM timescaledb_information.jobs WHERE hypertable_name = 'LogEntry' AND proc_name = 'policy_retention';")
+    if not result.fetchone():
+        session.execute('SELECT add_retention_policy(\'public."LogEntry"\', INTERVAL \'30 days\');')
+        session.commit()
+
+
 
 def seed_database(session):
+    from models.models import PalletType, StationStatus, Station, User, Status,InferenceRequest
     try:
         # 1. StationStatus
         station_statuses = ['Offline', 'Ready', 'Processing']

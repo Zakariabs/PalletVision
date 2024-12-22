@@ -1,6 +1,6 @@
 let inferenceRequestsData = [];
 let stationsData = [];
-
+const token = localStorage.getItem('jwtToken');
 // Function to populate the table
 const populateTable = (requests) => {
     const tableBody = document.getElementById('inference-requests');
@@ -69,7 +69,11 @@ const onStationChange = (event) => {
 };
 
 // Fetch stations and populate the dropdown
-fetch('http://127.0.0.1:5000/api/stations')
+fetch('http://127.0.0.1:5000/api/stations', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
     .then(response => {
         if (!response.ok) throw new Error('Failed to fetch station data');
         return response.json();
@@ -92,7 +96,12 @@ fetch('http://127.0.0.1:5000/api/stations')
     .catch(error => console.error('Error fetching station data:', error));
 
 // Fetch inference requests and populate the table
-fetch('http://127.0.0.1:5000/api/inference_requests')
+
+fetch('http://127.0.0.1:5000/api/inference_requests', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
     .then(response => {
         if (!response.ok) throw new Error('Failed to fetch inference requests');
         return response.json();

@@ -8,8 +8,9 @@ flasgger==0.9.5
 starlette==0.27.0
 bcrypt==3.2.0
 ultralytics
-torch
-Pillow
-torchvision
+torch==2.5.1
+Pillow==10.4.0
+torchvision==0.20.1
 inference-sdk==0.31.1
 python-dotenv==1.0.1
+Flask-JWT-Extended==4.7.1
