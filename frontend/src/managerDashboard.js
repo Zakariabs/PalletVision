@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function () {
     // Fetch and render pallet count chart
     const token = localStorage.getItem('jwtToken');
@@ -6,17 +7,36 @@ document.addEventListener("DOMContentLoaded", function () {
             'Authorization': `Bearer ${token}`
         }
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Failed to fetch chart data');
-        }
-        return response.json();
-    })
-    .then(data => {
-        // Prepare data for last 7 days
-        const last7DaysData = data.last_7_days.map(item => item.count);
-        const last7DaysLabels = data.last_7_days.map(item => item.pallet_type ?? 'Unknown');
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch chart data');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Pallet Count API Response:', data);
 
+            // Prepare data for last 7 days
+            const last7DaysData = data.last_7_days.map(item => item.count);
+            const last7DaysLabels = data.last_7_days.map(item => item.pallet_type ?? 'Unknown');
+
+            // Prepare data for last 30 days
+            const last30DaysData = data.last_30_days.map(item => item.count);
+            const last30DaysLabels = data.last_30_days.map(item => item.pallet_type ?? 'Unknown');
+            // Chart options for last 7 days
+            const options7Days = {
+                chart: {
+                    type: 'donut',
+                    height: 250,
+                },
+                series: last7DaysData,
+                labels: last7DaysLabels,
+                title: {
+                    text: 'Pallet Count - Last 7 Days',
+                    align: 'center',
+                },
+                colors: ['#008FFB', '#00E396', '#000000', '#FF4560'],
+            };
         // Prepare data for last 30 days
         const last30DaysData = data.last_30_days.map(item => item.count);
         const last30DaysLabels = data.last_30_days.map(item => item.pallet_type ?? 'Unknown');
@@ -35,20 +55,20 @@ document.addEventListener("DOMContentLoaded", function () {
             colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560'],
         };
 
-        // Chart options for last 30 days
-        const options30Days = {
-            chart: {
-                type: 'donut',
-                height: 250,
-            },
-            series: last30DaysData,
-            labels: last30DaysLabels,
-            title: {
-                text: 'Pallet Count - Last 30 Days',
-                align: 'center',
-            },
-            colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560'],
-        };
+            // Chart options for last 30 days
+            const options30Days = {
+                chart: {
+                    type: 'donut',
+                    height: 250,
+                },
+                series: last30DaysData,
+                labels: last30DaysLabels,
+                title: {
+                    text: 'Pallet Count - Last 30 Days',
+                    align: 'center',
+                },
+                colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560'],
+            };
 
         // Render charts
         const chart7Days = new ApexCharts(document.querySelector("#palletCountChart7Days"), options7Days);
@@ -67,26 +87,31 @@ document.addEventListener("DOMContentLoaded", function () {
             'Authorization': `Bearer ${token}`
         }
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Failed to fetch station data');
-        }
-        return response.json();
-    })
-    .then(stations => {
-        const stationTableBody = document.querySelector("#stationStatusTable tbody");
-        stationTableBody.innerHTML = ''; // Clear any existing rows
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch station data');
+            }
+            return response.json();
+        })
+        .then(stations => {
+            console.log('Stations API Response:', stations); // Log the received data for debugging
 
-        stations.forEach(station => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${station.station_name}</td>
-                <td class="${station.status_class}">${station.station_status}</td>
-            `;
-            stationTableBody.appendChild(row);
+            const stationTableBody = document.querySelector("#stationStatusTable tbody");
+            stationTableBody.innerHTML = ''; // Clear any existing rows
+
+            stations.forEach(station => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${station.station_name}</td>
+                    <td class="${station.status_class}">${station.station_status}</td>
+                    <td>
+                        <a href="stationDetails.html?station_id=${station.station_id}" class="btn btn-primary btn-sm">View Details</a>
+                    </td>
+                `;
+                stationTableBody.appendChild(row);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching station data:', error);
         });
-    })
-    .catch(error => {
-        console.error('Error fetching station data:', error);
-    });
 });
