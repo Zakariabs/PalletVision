@@ -8,6 +8,7 @@ from threading import Thread
 import os
 
 from flask_cors import CORS
+from flask_jwt_extended import create_access_token, JWTManager
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 
@@ -19,6 +20,8 @@ load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+app.config['JWT_SECRET_KEY'] = 'R2xj$f0dz8ow'
+jwt = JWTManager(app)
 DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
@@ -26,18 +29,19 @@ session = Session()
 app.session = session
 
 # Configuration
-IMAGES_DIR = "/app/app/ai_service/images/"       # directory with image_1.png, image_2.png, etc.
+IMAGES_DIR = "/app/app/ai_service/images/"       # directory with test images
 WEIGHTS_PATH = "/app/app/ai_service/model/best.pt"
 OUTPUT_DIR = "/app/app/ai_service/inferenced/"   # directory to store inferenced images
 INTERVAL = 5                # seconds between captures
 
-# Global variable to hold the latest inference result
+
 latest_inference_result = {"info": "No inference done yet"}
 
-# Initialize inference and camera
+
 inference_engine = YoloInference(weights_path=WEIGHTS_PATH, output_dir=OUTPUT_DIR)
 camera = CameraMock(images_dir=IMAGES_DIR, interval=INTERVAL)
-
+with app.app_context():
+    worker_token = create_access_token(identity='worker_identity')
 logger = logging.getLogger(__name__)
 
 
@@ -82,11 +86,14 @@ def process_image(image_path):
         session.add(pallet_type)
         session.commit()
     status_id = session.query(Status).filter_by(name="Done").first().id
-
+    detections = result.get('detections', 'No pallets detected.')
+    if detections:
+        detections = detections[0]
     if status == 200:
         logger.log(logging.INFO, f"Image has been written at {result['inferenced_image_path']}",
                    extra={"category": "inference", "timestamp": datetime.now(timezone.utc).isoformat(),
-                          "detections": result['detections'], "initial_image": image_path})
+                          "detections": detections, "initial_image": image_path})
+
         inference_request = {
                               "answer_time": datetime.now(timezone.utc).isoformat(),
                               "confidence_level": result['detections'][0]['confidence'],
@@ -95,13 +102,14 @@ def process_image(image_path):
                               "pallet_type": pallet_type.name,
                               "request_creation": start_req,
                               "station_id": 1,
-                              "status_id": status_id
+                              "status_id": status_id,
+                              "timestamp":datetime.now(timezone.utc).isoformat()
 }
-
-        requests.post('http://backend_container:5000/api/inference_requests', json=inference_request)
+        headers = {'Authorization': f'Bearer {worker_token}'}
+        res = requests.post('http://backend_container:5000/api/inference_requests', json=inference_request,headers=headers)
     else:
         logger.log(logging.ERROR, f"No pallets detected in {image_path}",
-                   extra={"category": "inference", "timestamp": datetime.now(timezone.utc).isoformat(),
+                   extra={"category": "inference_error", "timestamp": datetime.now(timezone.utc).isoformat(),
                           "detections": "No pallets detected", "initial_image": image_path})
         inference_request = {
             "answer_time": datetime.now(timezone.utc).isoformat(),
@@ -111,9 +119,14 @@ def process_image(image_path):
             "pallet_type": pallet_type.name,
             "request_creation": start_req,
             "station_id": 1,
-            "status_id": status_id
+            "status_id": status_id,
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
-        requests.post('http://backend_container:5000/api/inference_requests', json=inference_request)
+        headers = {
+            'Authorization': f'Bearer {worker_token}',
+            'Content-Type': 'application/json'
+        }
+        requests.post('http://backend_container:5000/api/inference_requests', json=inference_request,headers=headers)
     latest_inference_result = result
 
 def start_camera_loop():

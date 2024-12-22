@@ -1,6 +1,6 @@
 import json
 import os
-
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import requests
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 import logging
 
 
-from database_operations import add_initial_values
+from database_operations import add_initial_values, add_retention_policy
 from models.models import Base, PalletType, Station, User, StationStatus,InferenceRequest,LogEntry
 
 load_dotenv()
@@ -24,10 +24,25 @@ swagger = Swagger(app, template={
     "swagger": "2.0",
     "info": {
         "title": "PalletVision Service",
-        "version": "0.0.1"
-    }
+        "version": "0.0.2"
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
+        }
+    },
+    "security": [
+        {
+            "Bearer": []
+        }
+    ]
 })
 
+app.config['JWT_SECRET_KEY'] = 'R2xj$f0dz8ow'
+jwt = JWTManager(app)
 # Database Configuration
 DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
@@ -35,7 +50,7 @@ Session = sessionmaker(bind=engine)
 session = Session()
 Base.metadata.create_all(engine)
 app.session = session
-
+session.commit()
 logger = logging.getLogger(__name__)
 
 
@@ -69,11 +84,13 @@ endpoint_handler.setLevel(logging.INFO)
 logger.addHandler(endpoint_handler)
 # Helper Function: Add Initial Values
 add_initial_values(session)
-
+# set up the data retention for the LogEntry table
+add_retention_policy(session)
 # seed_database(session)
 
 # Backend API Endpoints
 @app.route('/api/inference_requests', methods=['GET'])
+@jwt_required()
 def get_inference_requests():
     """
     Get all inference requests
@@ -86,6 +103,7 @@ def get_inference_requests():
     return jsonify([request.to_dict() for request in requests])
 
 @app.route('/api/inference_requests', methods=['POST'])
+@jwt_required()
 def create_inference_request():
     """
     Create a new inference request
@@ -128,6 +146,13 @@ def create_inference_request():
         description: The created inference request
     """
     data = request.json
+    print("data: ",data)
+    required_fields = ['station_id', 'initial_image_path', 'inferred_image_path', 'request_creation', 'answer_time',
+                       'status_id', 'confidence_level', 'pallet_type']
+    missing_fields = [field for field in required_fields if field not in data]
+
+    if missing_fields:
+        return jsonify({'msg': f'Missing required fields: {", ".join(missing_fields)}'}), 422
     pallet_type = session.query(PalletType).filter_by(name=data['pallet_type']).first()
 
     if not pallet_type:
@@ -163,6 +188,7 @@ def create_inference_request():
 
 
 @app.route('/api/new_installation',methods=['POST'])
+@jwt_required()
 def create_new_install():
     """
     Create a new installation
@@ -204,6 +230,7 @@ def create_new_install():
     return jsonify({'message': 'New Installation Created', 'id': new_station.id}), HTTP_201_CREATED
 
 @app.route('/api/stations', methods=['GET'])
+@jwt_required()
 def get_stations():
     """
     Get all stations
@@ -228,6 +255,7 @@ def get_stations():
     ])
 
 @app.route('/api/pallet_count', methods=['GET'])
+@jwt_required()
 def pallet_count():
     """
     Get all list of inference requests from the last 7 and 30 days
@@ -314,11 +342,7 @@ def create_log_entry():
       201:
         description: The created log entry
         schema:
-          id: LogEntry
           properties:
-            id:
-              type: integer
-              description: The ID of the log entry
             category:
               type: string
               description: The category of the log entry
@@ -340,16 +364,17 @@ def create_log_entry():
     data = request.json
     log_entry = LogEntry(
         category=data['category'],
-        timestamp=datetime.fromisoformat(data['timestamp']),
-        detections=json.dumps(getattr(data, 'detections', 'No detections')),
+        detections=json.dumps(data.get('detections', 'No detections')),
         initial_image=data['initial_image'],
         message=data['message']
     )
+
     session.add(log_entry)
     session.commit()
     return jsonify({'message': 'Log entry created successfully'}), 201
 
 @app.route('/api/logs',methods=['GET'])
+@jwt_required()
 def get_all_logs():
     """
     Get all logs entries
@@ -364,6 +389,48 @@ def get_all_logs():
 @app.route('/health', methods=['GET'])
 def health():
     return 'OK', 200
+
+@app.route('/login', methods=['POST'])
+def login():
+    """
+    User login to get JWT token
+    ---
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          id: Login
+          required:
+            - username
+            - password
+          properties:
+            username:
+              type: string
+              description: The username
+              example: user1
+            password:
+              type: string
+              description: The password
+              example: password1
+    responses:
+      200:
+        description: JWT token
+        schema:
+          type: object
+          properties:
+            access_token:
+              type: string
+              description: The JWT token
+    """
+    username = request.json.get('username', None)
+    password = request.json.get('password', None)
+    user = app.session.query(User).filter_by(username=username).first()
+    if not user or not user.check_password(password):
+        return jsonify({"msg": "Bad username or password"}), 401
+
+    access_token = create_access_token(identity=username)
+    return jsonify(access_token=access_token)
 
 # Run Flask App
 if __name__ == "__main__":

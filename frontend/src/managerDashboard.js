@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     text: 'Pallet Count - Last 7 Days',
                     align: 'center',
                 },
-                colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560'], // Adjust color palette as needed
+                colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560'],
             };
 
             // Chart options for last 30 days
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     text: 'Pallet Count - Last 30 Days',
                     align: 'center',
                 },
-                colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560'], // Adjust color palette as needed
+                colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560'],
             };
 
             // Render charts
