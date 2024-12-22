@@ -30,7 +30,7 @@ app.session = session
 
 # Configuration
 IMAGES_DIR = "/app/app/ai_service/images/"       # directory with test images
-WEIGHTS_PATH = "/app/app/ai_service/model/best.pt"
+WEIGHTS_PATH = "/app/app/ai_service/model/best_v2.pt"
 OUTPUT_DIR = "/app/app/ai_service/inferenced/"   # directory to store inferenced images
 INTERVAL = 5                # seconds between captures
 
