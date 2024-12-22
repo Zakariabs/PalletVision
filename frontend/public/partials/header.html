@@ -28,9 +28,16 @@
                 -->
                 <!-- Username Placeholder -->
                 <li class="nav-item">
-                    <a class="nav-link" href="#" aria-label="User Profile">ManagerUsername</a>
+                    <a class="nav-link" href="#" id="loginLink" aria-label="Login">Login</a>
                 </li>
             </ul>
+            <div id="loginFormContainer" style="display: none;">
+                <form id="loginForm">
+                    <input type="text" id="username" placeholder="Username" required>
+                    <input type="password" id="password" placeholder="Password" required>
+                    <button type="submit">Login</button>
+                </form>
+            </div>
         </div>
     </div>
 </nav>

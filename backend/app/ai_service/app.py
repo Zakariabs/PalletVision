@@ -90,9 +90,6 @@ def process_image(image_path):
     if detections:
         detections = detections[0]
     if status == 200:
-        logger.log(logging.INFO, f"Image has been written at {result['inferenced_image_path']}",
-                   extra={"category": "inference", "timestamp": datetime.now(timezone.utc).isoformat(),
-                          "detections": detections, "initial_image": image_path})
 
         inference_request = {
                               "answer_time": datetime.now(timezone.utc).isoformat(),
@@ -107,6 +104,14 @@ def process_image(image_path):
 }
         headers = {'Authorization': f'Bearer {worker_token}'}
         res = requests.post('http://backend_container:5000/api/inference_requests', json=inference_request,headers=headers)
+        if res.status_code == 201:
+            logger.log(logging.INFO, f"Image has been written at {result['inferenced_image_path']}",
+                       extra={"category": "inference", "timestamp": datetime.now(timezone.utc).isoformat(),
+                              "detections": detections, "initial_image": image_path})
+        elif res.status_code == 400:
+            logger.log(logging.INFO, f"{result['inferenced_image_path']} already exists in the db.",
+                       extra={"category": "duplicate_error", "timestamp": datetime.now(timezone.utc).isoformat(),
+                              "detections": detections, "initial_image": image_path})
     else:
         logger.log(logging.ERROR, f"No pallets detected in {image_path}",
                    extra={"category": "inference_error", "timestamp": datetime.now(timezone.utc).isoformat(),

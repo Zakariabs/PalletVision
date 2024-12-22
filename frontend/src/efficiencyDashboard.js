@@ -1,10 +1,14 @@
 document.addEventListener("DOMContentLoaded", function () {
-
+    const token = localStorage.getItem('jwtToken');
     const past30DayRequestElement = document.querySelector('.card-body h3.text-warning');
     const noPalletTypeRateElement = document.querySelectorAll('.card-body h3.text-warning')[1];
     const processingTimeElement = document.querySelector('.gauge-box p.display-4');
 
-    fetch('http://127.0.0.1:5000/api/inference_requests')
+    fetch('http://127.0.0.1:5000/api/inference_requests', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
         .then(response => response.json())
         .then(data => {
             if (!Array.isArray(data)) {

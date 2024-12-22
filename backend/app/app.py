@@ -269,24 +269,24 @@ def pallet_count():
     thirty_days_ago = now - timedelta(days=30)
 
     last_7_days = (
-        app.session.query(InferenceRequest.pallet_type, func.count(InferenceRequest.request_id))
+        app.session.query(PalletType.name, func.count(InferenceRequest.request_id))
+        .join(InferenceRequest, InferenceRequest.pallet_type_id == PalletType.id)
         .filter(InferenceRequest.request_creation >= seven_days_ago)
-        .group_by(InferenceRequest.pallet_type)
+        .group_by(PalletType.name)
         .all()
     )
     last_30_days = (
-        app.session.query(InferenceRequest.pallet_type, func.count(InferenceRequest.request_id))
+        app.session.query(PalletType.name, func.count(InferenceRequest.request_id))
+        .join(InferenceRequest, InferenceRequest.pallet_type_id == PalletType.id)
         .filter(InferenceRequest.request_creation >= thirty_days_ago)
-        .group_by(InferenceRequest.pallet_type)
+        .group_by(PalletType.name)
         .all()
     )
 
     def format_data(data):
-        pallet_types = {p.id: p.name for p in session.query(PalletType).all()}
         formatted = []
         for pallet_type, count in data:
-            pallet_type_name = pallet_types.get(pallet_type)
-            formatted.append({"pallet_type": pallet_type_name, "count": count})
+            formatted.append({"pallet_type": pallet_type, "count": count})
         return formatted
 
     return jsonify({
