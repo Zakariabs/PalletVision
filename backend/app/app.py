@@ -176,6 +176,9 @@ def create_inference_request():
             pallet_type=pallet_type
         )
         app.session.add(new_request)
+        station_to_update = app.session.query(Station).filter_by(id=1).one()
+        station_to_update.station_status_id = 1
+        app.session.add(station_to_update)
         app.session.commit()
         return jsonify(new_request.to_dict()), 201
     except IntegrityError as e:
