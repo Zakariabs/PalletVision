@@ -72,8 +72,6 @@ Environments
 Jupyter Notebook
 .ipynb_checkpoints
 
-MySQL
-*.sql
 
 PostgreSQL
 *.pgdata
