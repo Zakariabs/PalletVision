@@ -5,6 +5,7 @@
     "dependencies": {
         "apexcharts": "^4.1.0",
         "axios": "^1.7.9",
+        "chart.js": "^4.4.7",
         "socket.io-client": "^4.8.1"
     },
     "scripts": {

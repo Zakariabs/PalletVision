@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function () {
     // Fetch and render pallet count chart
     fetch('http://127.0.0.1:5000/api/pallet_count')

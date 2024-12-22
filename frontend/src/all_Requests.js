@@ -26,7 +26,7 @@ const populateTable = (requests) => {
                 <td>${(request.confidence_level * 100).toFixed(2)}%</td>
             </tr>
         `;
-        tableBody.insertAdjacentHTML('beforeend', row);
+        tableBody.insertAdjacentHTML('afterbegin', row);
     });
 };
 

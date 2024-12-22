@@ -11,40 +11,49 @@
     <!-- Placeholder for Header -->
     <div id="header"></div>
 
-    <main class="container mt-5">
+    <main class="container mt-4">
         <h2 class="text-center mb-4">Efficiency Analytics</h2>
         <div class="row">
-            <!-- Left Side -->
+            <!-- Left Column -->
             <div class="col-md-4">
-                <!-- Hourly Pallet Processing Rate -->
+                <!-- Processed Today -->
                 <div class="card mb-4">
                     <div class="card-body text-center">
-                        <h3 class="text-warning">15</h3>
-                        <p>Past 24Hr</p>
-                        <div class="chart-box"></div>
-                        <p class="mt-2 small text-muted">Hourly Pallet Processing Rate</p>
+                        <h4>Daily Pallet Processing</h4>
+                        <div class="d-flex justify-content-center align-items-center position-relative">
+                            <span class="rotated-text">Past 24hr</span>
+                            <h1 id="processedToday" class="text-warning display-4 mb-0 ms-3">15</h1>
+                        </div>
+                        <hr>
+                        <p>Past 30 days</p>
+                        <canvas id="processingChart" class="my-3"></canvas>
                     </div>
                 </div>
-                <!-- Inference Confidence Level -->
+                <!-- Mean Confidence Level -->
                 <div class="card">
                     <div class="card-body text-center">
-                        <h3 class="text-warning">63%</h3>
-                        <p>Past 24Hr</p>
-                        <div class="chart-box"></div>
-                        <p class="mt-2 small text-muted">Inference Confidence Level</p>
+                        <h4>Mean Confidence Level</h4>
+                        <div class="d-flex justify-content-center align-items-center position-relative">
+                            <span class="rotated-text">Past 24 days</span>
+                            <h1 id="meanConfidence" class="text-warning display-4 mb-0 ms-3">63%</h1>
+                        </div>
+                        <hr>
+                        <p>Past 30 days</p>
+                        <canvas id="confidenceChart" class="my-3"></canvas>
                     </div>
                 </div>
+
             </div>
 
-            <!-- Right Side -->
+            <!-- Right Column -->
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-body text-center">
-                        <h4 class="text-muted">Processing Time [ms]</h4>
-                        <p class="text-muted">Last 6Hr</p>
+                        <h4>Processing Time [ms]</h4>
+                        <p>Last 6Hr</p>
                         <!-- Placeholder for Gauge Chart -->
-                        <div class="gauge-box">
-                            <p class="text-success display-4 mt-4">3ms</p>
+                        <div id="processingGauge" class="gauge-box mx-auto my-4" style="height: 250px;">
+                            <p id="processing_last_6" class="text-success display-4 mt-4">3ms</p>
                         </div>
                     </div>
                 </div>
