@@ -1,3 +1,4 @@
+const { all } = require('axios');
 const path = require('path');
 
 module.exports = {
@@ -6,7 +7,9 @@ module.exports = {
         managerDashboard: './src/managerDashboard.js', // Entry for the Manager Dashboard
         stationDashboard: './src/stationDashboard.js', // Entry for the Station Dashboard
         efficiencyDashboard: './src/efficiencyDashboard.js', // Entry for the Station Dashboard
-        login: './src/login.js'
+        login: './src/login.js',
+        allRequests: './src/all_Requests.js', // Entry for the All Requests page
+        log_page: './src/logs.js', // Entry for the Log page
     },
     output: {
         filename: '[name].bundle.js', // Output filename pattern: index.bundle.js, managerDashboard.bundle.js, etc.

@@ -86,7 +86,7 @@ Run the following commands to build and start the application in Docker:
    - `frontend_container`
    - `backend_container`
    - `timescaledb_container`
-   - `redis_container`
+   - `inference`
 
 3. Access the application:
    - **Frontend**: [http://localhost:3000](http://localhost:3000)
