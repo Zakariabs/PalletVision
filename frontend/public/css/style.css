@@ -12,60 +12,63 @@ html, body {
     margin: 0;
     display: flex;
     flex-direction: column;
-    background-color: var(--primary-bg);/* Page background */
+    background-color: var(--primary-bg); /* Page background */
     color: var(--text-primary);
 }
 
 main {
-    flex: 1; /*  main expands and pushes the footer to the bottom if content is small */
+    flex: 1; /* Main expands and pushes the footer to the bottom if content is small */
 }
 
-
-
-
 /* Dark boxes Styles */
-.custom-navbar, .custom-footer, .table thead th, .card  {
+.custom-navbar, .custom-footer, .table thead th, .card {
     background-color: var(--dark-bg) !important; /* Header background */
 }
 
-/* header, footer links */
-.custom-navbar .nav-link, .custom-footer a {
-    color: var(--text-primary) !important; /* Link color */
+/* Optimized Header/Navbar */
+.custom-navbar {
+    background-color: var(--dark-bg); /* Navbar background color */
+}
+
+.custom-navbar .navbar-brand {
+    color: var(--text-primary);
+    font-weight: bold;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
     text-decoration: none;
 }
 
-/* header ,footer links: Brighter hover effects for visiblity*/
-.custom-navbar .nav-link:hover, .custom-footer a:hover {
-    color: var(--text-focus) !important; /* Brighter hover effect */
+.custom-navbar .navbar-logo {
+    width: 50px; 
+    height: auto;
+    margin-right: 10px;
+}
+
+.custom-navbar .nav-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+.custom-navbar .nav-link:hover {
+    color: var(--text-focus);
     font-weight: bold;
 }
 
-/* Navbar Toggler Styles */
-.custom-toggler .navbar-toggler-icon {
+/* Navbar Toggler */
+.navbar-toggler-icon {
     background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23FFFFFF' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(255, 255, 255, 0.5)' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
 }
 
-/* Navbar Brand Color */
-.navbar-brand {
-    color: var(--text-primary) !important; 
-    font-weight: bold;
-    font-size: 1.25rem; 
-    text-decoration: none;
-}
-
-/* Navbar Brand Logo */
-.navbar-logo {
-    width: 50px; 
-    height: auto;
-    display: inline-block;
-}
-
-/* Footer always at the bottom */
+/* Footer Styles */
 footer {
     text-align: center;
     padding: 10px 0;
     position: relative;
     width: 100%;
+    background-color: var(--dark-bg); /* Footer background color */
+    color: var(--text-primary);
 }
 
 /* Card Styles */
@@ -73,17 +76,12 @@ footer {
     border: none;
 }
 
-
 /* Table Styles */
-
 @media (max-width: 768px) {
     .table {
         margin-bottom: 20px;
     }
 }
-
-
-
 
 .table th {
     background-color: var(--secondary-bg); /* Header background */
@@ -102,22 +100,23 @@ footer {
     object-fit: cover;
 }
 
-/* Button stylings */
+/* Buttons */
+.btn-primary {
+    background-color: var(--text-primary); /* Highlight color */
+    color: var(--dark-bg); /* Contrast text */
+}
+
 .btn-primary:hover {
-    background-color: var(--secondary-bg) ; /* Highlight color */
-    color: var(--text-focus) ; /* Contrast text */
+    background-color: var(--secondary-bg); /* Highlight color */
+    color: var(--text-focus); /* Contrast text */
 }
 
 .btn-secondary:hover {
-    background-color: var(--secondary-bg) ; /* Secondary background */
-    color: var(--text-focus) ; /* Focus text */
+    background-color: var(--secondary-bg); /* Secondary background */
+    color: var(--text-focus); /* Focus text */
 }
 
-
-
-/* Custom Styles for Dashboard */
-
-/*add size limitation for small screens*/
+/* Charts */
 @media (max-width: 768px) {
     .chart-box, .gauge-box {
         height: 120px;
@@ -125,19 +124,20 @@ footer {
     }
 }
 
-/* Chart Placeholder */
-.chart-box {
-    height: 150px;
-    width: 100%;
-    background-color: #FFFFFF;
-    border-radius: 5px;
+.rotated-text {
+    writing-mode: vertical-rl; /* Rotates text to read top-to-bottom */
+    transform: rotate(180deg); /* Ensures text is not upside down */
+    font-size: 0.9rem; /* Adjust the size to fit nicely */
+    color: var(--text-primary); 
+    margin-right: 10px; /* Space between the rotated text and the number */
+    line-height: 1.5; /* Better vertical spacing */
 }
 
 /* Gauge Box Placeholder */
 .gauge-box {
     height: 200px;
     width: 100%;
-    background-color:  var(--primary-bg); /* Dark background for gauge area */
+    background-color: var(--primary-bg); /* Dark background for gauge area */
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -145,7 +145,7 @@ footer {
     color: var(--text-higlight); /* Highlight color for value */
 }
 
-/*station data*/
+/* Station Data */
 
 /* Station Status Box */
 .status-box {
@@ -165,9 +165,3 @@ footer {
     color: var(--secondary-bg); /* Muted text color */
     font-size: 0.9rem;
 }
-
-
-
-
-
-

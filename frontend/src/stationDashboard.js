@@ -1,6 +1,16 @@
 let inferenceRequestsData = [];
 let stationsData = [];
 const token = localStorage.getItem('jwtToken');
+
+// Utility function to get URL query parameters
+const getQueryParam = (key) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(key);
+};
+
+// Get the station_id from the URL query parameters
+const stationId = getQueryParam('station_id');
+
 // Function to populate the table
 const populateTable = (requests) => {
     const tableBody = document.getElementById('inference-requests');
@@ -23,93 +33,107 @@ const populateTable = (requests) => {
                 <td>${(request.confidence_level * 100).toFixed(2)}%</td>
             </tr>
         `;
-        tableBody.insertAdjacentHTML('beforeend', row);
+        tableBody.insertAdjacentHTML('afterbegin', row);
     });
 };
 
-// Function to filter and display station details
-const updateStationDetails = (selectedStationName) => {
-    const stationNameElement = document.getElementById('station-name');
-    const stationInfoElement = document.getElementById('station-info');
-    const stationStatusElement = document.getElementById('station-status');
-    const statusIndicatorElement = stationStatusElement.querySelector('.status-indicator');
+// Function to fetch and display station details
+const fetchStationDetails = (stationId) => {
+    return fetch(`http://127.0.0.1:5000/api/stations/${stationId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to fetch station details');
+            return response.json();
+        })
+        .then(station => {
+            // Update station details
+            const stationNameElement = document.getElementById('station-name');
+            const stationInfoElement = document.getElementById('station-info');
+            const stationStatusElement = document.getElementById('station-status');
+            const statusIndicatorElement = stationStatusElement.querySelector('.status-indicator');
 
-    if (selectedStationName) {
-        const selectedStationData = stationsData.find(station => station.station_name === selectedStationName);
-        if (selectedStationData) {
-            stationNameElement.textContent = selectedStationData.station_name;
-            statusIndicatorElement.textContent = selectedStationData.station_status;
-            stationStatusElement.className = `status-box p-3 rounded text-white ${selectedStationData.status_class}`;
+            stationNameElement.textContent = station.station_name;
+            statusIndicatorElement.textContent = station.station_status;
+            stationStatusElement.className = `status-box p-3 rounded text-white ${station.status_class}`;
 
-            stationNameElement.style.display = 'block';
             stationInfoElement.style.display = 'flex';
             statusIndicatorElement.style.display = 'inline';
-        }
-    } else {
-        stationNameElement.textContent = 'Stations';
-        stationNameElement.style.display = 'block';
-        stationInfoElement.style.display = 'none';
-        statusIndicatorElement.style.display = 'none'; // Hide the status text
-    }
-};
 
-// Event listener for the station dropdown change
-const onStationChange = (event) => {
-    const selectedStationName = event.target.value;
-
-    // Update station details
-    updateStationDetails(selectedStationName);
-
-    // Filter and display the inference requests
-    const filteredRequests = selectedStationName
-        ? inferenceRequestsData.filter(request => request.station_name === selectedStationName)
-        : inferenceRequestsData;
-
-    populateTable(filteredRequests);
-};
-
-// Fetch stations and populate the dropdown
-fetch('http://127.0.0.1:5000/api/stations', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            return station;
         })
-    .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch station data');
-        return response.json();
-    })
-    .then(stations => {
-        stationsData = stations; // Store the data in a global variable
-        const stationSelect = document.getElementById('station-select');
-        stationSelect.innerHTML = '<option value="">All Stations</option>'; // Add default option
-
-        stations.forEach(station => {
-            const option = document.createElement('option');
-            option.value = station.station_name;
-            option.textContent = `${station.station_name} (${station.station_status})`;
-            stationSelect.appendChild(option);
+        .catch(error => {
+            console.error('Error fetching station details:', error)
+            throw error;
         });
+};
 
-        // Attach event listener once after stations are loaded
-        stationSelect.addEventListener('change', onStationChange);
-    })
-    .catch(error => console.error('Error fetching station data:', error));
-
-// Fetch inference requests and populate the table
-
-fetch('http://127.0.0.1:5000/api/inference_requests', {
+// Function to fetch and display inference requests for a specific station
+const fetchInferenceRequests = (stationId) => {
+    fetch(`http://127.0.0.1:5000/api/stations/${stationId}/inference_requests`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         })
-    .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch inference requests');
-        return response.json();
-    })
-    .then(data => {
-        inferenceRequestsData = data; // Store the data in a global variable
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to fetch inference requests');
+            return response.json();
+        })
+        .then(requests => {
+            populateTable(requests); // Populate table with filtered requests
+        })
+        .catch(error => console.error('Error fetching inference requests:', error));
+};
 
-        // Populate table with all requests
-        populateTable(data);
-    })
-    .catch(error => console.error('Error fetching inference requests data:', error));
+// Function to update the image placeholder based on the station's status and available image
+const updateStationImage = (stationId, stationStatus) => {
+    const imageBox = document.querySelector('.image-box');
+    const placeholderContainer = document.querySelector('.image-placeholder');
+
+    if (stationStatus === "Offline") {
+        // Hide the placeholder entirely for Offline status
+        placeholderContainer.style.display = 'none';
+        return;
+    }
+
+    // Fetch the current image based on station ID
+    fetch(`http://127.0.0.1:5000/api/stations/${stationId}/current_image`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to fetch current image');
+            return response.json();
+        })
+        .then(data => {
+            if (data.image) {
+                // Display the image
+                imageBox.innerHTML = `
+                    <img src="${data.image}" alt="Station Image" class="station-image">
+                    <p class="text-muted">${stationStatus === "Processing" ? "Waiting for answer" : "Last processed image"}</p>
+                `;
+                placeholderContainer.style.display = 'block'; // Ensure the box is visible
+            } else {
+                // Hide the image box if no image is available
+                placeholderContainer.style.display = 'none';
+            }
+        })
+        .catch(error => console.error('Error fetching station image:', error));
+};
+
+if (stationId) {
+    fetchStationDetails(stationId) // Fetch and display station details
+        .then(stationDetails => {
+            const stationStatus = stationDetails.station_status;
+            updateStationImage(stationId, stationStatus);
+        })
+        .catch(error => {
+            console.error('Error processing station details:', error)
+        });
+    fetchInferenceRequests(stationId); // Fetch and display inference requests
+} else {
+    console.error('No station_id provided in the URL');
+}
