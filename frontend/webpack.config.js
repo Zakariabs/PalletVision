@@ -1,45 +1,60 @@
-const { all } = require('axios');
 const path = require('path');
 
 module.exports = {
     entry: {
-        index: './src/index.js', // Entry file for the main index page
-        managerDashboard: './src/managerDashboard.js', // Entry for the Manager Dashboard
-        stationDashboard: './src/stationDashboard.js', // Entry for the Station Dashboard
-        efficiencyDashboard: './src/efficiencyDashboard.js', // Entry for the Station Dashboard
-        login: './src/login.js',
-        allRequests: './src/all_Requests.js', // Entry for the All Requests page
-        log_page: './src/logs.js', // Entry for the Log page
+        app: './src/app.js', // Single entry point instead of 6
     },
     output: {
-        filename: '[name].bundle.js', // Output filename pattern: index.bundle.js, managerDashboard.bundle.js, etc.
-        path: path.resolve(__dirname, 'public/js'), // Output directory for JS files
+        filename: '[name].bundle.js', // Will create app.bundle.js
+        path: path.resolve(__dirname, 'public/js'),
+        clean: true, // Clean output directory before build
     },
+    mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     devServer: {
         static: {
-            directory: path.join(__dirname, 'public'), // Serve static files from the public directory
+            directory: path.join(__dirname, 'public'),
         },
-        port: 3000, // Port for the development server
-        hot: true, // Enable Hot Module Replacement
-        open: true, // Automatically open the browser
+        port: 3000,
+        hot: true,
+        open: true,
+        historyApiFallback: true, // Support for SPA routing
     },
     module: {
         rules: [
             {
-                test: /\.css$/, // Process CSS files
+                test: /\.css$/,
                 use: ['style-loader', 'css-loader'],
             },
             {
-                test: /\.js$/, // Transpile JavaScript files
+                test: /\.js$/,
                 exclude: /node_modules/,
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        presets: ['@babel/preset-env'], // Support for modern JavaScript
+                        presets: ['@babel/preset-env'],
                     },
                 },
             },
+            // Handle images
+            {
+                test: /\.(png|svg|jpg|jpeg|gif)$/i,
+                type: 'asset/resource',
+            },
         ],
     },
-    mode: 'development', // Set to 'development' or 'production' based on your environment
+    optimization: {
+        // Split chunks for better caching
+        splitChunks: {
+            chunks: 'all',
+            cacheGroups: {
+                vendor: {
+                    test: /[\\/]node_modules[\\/]/,
+                    name: 'vendors',
+                    chunks: 'all',
+                },
+            },
+        },
+    },
+    // Source maps for development
+    devtool: process.env.NODE_ENV === 'production' ? false : 'eval-source-map',
 };

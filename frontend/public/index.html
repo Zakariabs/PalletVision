@@ -3,44 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to PalletVision</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <title>PalletVision - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Placeholder for Header -->
+    <!-- Header -->
     <div id="header"></div>
 
     <!-- Main Content -->
-    <main class="container my-5">
-        <h1 class="text-center text-focus">Welcome to PalletVision</h1>
-        <br>
-        <p class="text-center">This screen is only for demo purposes. These dashboards are not supposed to be linked togheter</p>
-        <br>
+    <div class="container mt-4">
+        <div class="text-center mb-5">
+            <h1 class="display-4">PalletVision</h1>
+            <p class="lead">AI-Powered Pallet Recognition System</p>
+        </div>
 
-        <h2 class="text-center">Select the dashboard you need:</h2>
-
-        <div class="row justify-content-center mt-5">
+        <!-- Dashboard Cards -->
+        <div class="row g-4">
             <!-- Manager Dashboard -->
-            <div class="col-md-4">
-                <a href="pages/managerDashboard.html" class="btn btn-primary btn-lg w-100 py-3">Manager Dashboard</a>
-                <p class="text-center mt-3">This is a link to the home page of the manager views, accessible from an internet browser</p>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Manager Dashboard</h5>
+                        <p class="card-text">View overall system statistics and station status</p>
+                        <a href="pages/managerDashboard.html" class="btn btn-primary">Access Dashboard</a>
+                    </div>
+                </div>
             </div>
+
             <!-- Station Dashboard -->
-            <div class="col-md-4">
-                <a href="pages/stationDashboard.html?station_id=1" class="btn btn-secondary btn-lg w-100 py-3">Station 1 Dashboard</a>
-                <p class="text-center mt-3">This is a link to the display of the pallet recognition station itself. This is only 1 view, with no links and only information about a single station</p>
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Station Monitor</h5>
+                        <p class="card-text">Monitor individual station performance</p>
+                        <a href="pages/stationDashboard.html?station_id=1" class="btn btn-secondary">View Station</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Requests -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">All Requests</h5>
+                        <p class="card-text">View all inference requests across stations</p>
+                        <a href="pages/all_Requests.html" class="btn btn-info">View All</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Logs -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">System Logs</h5>
+                        <p class="card-text">Monitor system events and errors</p>
+                        <a href="pages/logs.html" class="btn btn-warning">View Logs</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Login</h5>
+                        <p class="card-text">Access protected features</p>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </main>
+    </div>
 
-    <!-- Placeholder for Footer -->
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" form="loginForm" class="btn btn-primary" id="loginButton">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
     <div id="footer"></div>
 
-    <!-- JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/index.bundle.js"></script>
-    <script src="js/login.bundle.js"></script>
-
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="js/app.bundle.js"></script> <!-- Single bundle instead of multiple -->
 </body>
 </html>

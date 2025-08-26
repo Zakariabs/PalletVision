@@ -1,71 +1,54 @@
 services:
-  timescaledb:
-    image: timescale/timescaledb:latest-pg14
-    container_name: timescaledb
+  # PostgreSQL Database (simplified from TimescaleDB)
+  postgres:
+    image: postgres:15
+    container_name: palletvision_db
     environment:
       POSTGRES_USER: pallet
       POSTGRES_PASSWORD: pallet
       POSTGRES_DB: warehouse
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pallet -h 127.0.0.1 -d warehouse"]
+      test: ["CMD-SHELL", "pg_isready -U pallet -h localhost -d warehouse"]
       interval: 10s
       timeout: 5s
       retries: 5
-  backend:
+
+  # Combined Backend + Frontend + AI Service
+  app:
     build:
-      context: ./backend
-      dockerfile: Dockerfile.backend
-    container_name: backend_container
+      context: .
+      dockerfile: Dockerfile
+    container_name: palletvision_app
     environment:
-      - FLASK_ENV=development
-      - DATABASE_URL=postgresql+psycopg2://pallet:pallet@timescaledb:5432/warehouse
+      - FLASK_ENV=production
+      - DATABASE_URL=postgresql+psycopg2://pallet:pallet@postgres:5432/warehouse
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-secret-key-change-this}
+      - WEIGHTS_PATH=/app/model/best.pt
+      - IMAGES_DIR=/app/images/
+      - OUTPUT_DIR=/app/static/images/
     ports:
-      - "5000:5000"
+      - "3000:3000"  # Frontend
+      - "5000:5000"  # Backend API
     volumes:
-      - ./backend/app/ai_model/dataset/test_images:/app/images
+      - ./backend/app/ai_service/model:/app/model:ro
+      - ./backend/app/ai_service/images:/app/images:ro
+      - ./frontend/public:/app/static
+      - inference_results:/app/static/images
     depends_on:
-      timescaledb:
+      postgres:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://127.0.0.1:5000/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.frontend
-    container_name: frontend_container
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend/public:/frontend/public
-    environment:
-      - NODE_ENV=development
-    depends_on:
-      backend:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://frontend_container:3000/"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  inference_worker:
-    build:
-      context: ./backend/
-      dockerfile: app/ai_service/Dockerfile.inference_worker
-    container_name: inference
-    environment:
-      - DATABASE_URL=postgresql+psycopg2://pallet:pallet@timescaledb:5432/warehouse
-    volumes:
-      - ./backend/app/ai_service/images:/app/images:ro
-      - ./backend/app/ai_service/inferenced:/app/images/inferenced
-    depends_on:
-      frontend:
-        condition: service_healthy
-
-    command: ["python", "app/ai_service/app.py"]
+volumes:
+  postgres_data:
+  inference_results:
