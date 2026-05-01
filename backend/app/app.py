@@ -4,7 +4,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 import requests
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
-from sqlalchemy import create_engine, func
+from sqlalchemy import create_engine, func, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker, joinedload
 from starlette.status import HTTP_201_CREATED
@@ -82,6 +82,22 @@ endpoint_handler.setLevel(logging.INFO)
 
 # Add the handler to the logger
 logger.addHandler(endpoint_handler)
+def apply_runtime_migrations(db_session):
+    """Idempotent column adds for InferenceRequest. Replaces a real migration tool for v1."""
+    statements = [
+        'ALTER TABLE "InferenceRequest" ADD COLUMN IF NOT EXISTS model_version VARCHAR(64);',
+        'ALTER TABLE "InferenceRequest" ADD COLUMN IF NOT EXISTS flagged_for_review BOOLEAN NOT NULL DEFAULT FALSE;',
+    ]
+    for stmt in statements:
+        try:
+            db_session.execute(text(stmt))
+            db_session.commit()
+        except Exception as exc:
+            db_session.rollback()
+            print(f"Migration step skipped ({stmt!r}): {exc}")
+
+
+apply_runtime_migrations(session)
 # Helper Function: Add Initial Values
 add_initial_values(session)
 # set up the data retention for the LogEntry table
@@ -168,7 +184,9 @@ def create_inference_request():
             answer_time=data['answer_time'],
             status_id=data['status_id'],
             confidence_level=data['confidence_level'],
-            pallet_type=pallet_type
+            pallet_type=pallet_type,
+            model_version=data.get('model_version'),
+            flagged_for_review=data.get('flagged_for_review', False),
         )
         app.session.add(new_request)
         station_to_update = app.session.query(Station).filter_by(id=1).one()

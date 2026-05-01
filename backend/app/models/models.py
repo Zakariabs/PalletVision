@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP, Float, DateTime, JSON, Text, \
+from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP, Float, DateTime, JSON, Text, Boolean, \
     PrimaryKeyConstraint, UniqueConstraint, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -72,6 +72,8 @@ class InferenceRequest(Base):
     status_id = Column(Integer, ForeignKey('Status.id'), nullable=False)
     confidence_level = Column(Float)
     pallet_type_id = Column(Integer, ForeignKey('PalletType.id'))
+    model_version = Column(String(64))
+    flagged_for_review = Column(Boolean, nullable=False, default=False, server_default='false')
     timestamp = Column(TIMESTAMP(timezone=True), nullable=False,server_default=func.now())
     station = relationship('Station')
     status = relationship('Status')
@@ -97,6 +99,8 @@ class InferenceRequest(Base):
             'status_name': self.status.name if self.status else None,
             'confidence_level': self.confidence_level,
             'pallet_type': self.pallet_type.name if self.pallet_type else None,
+            'model_version': self.model_version,
+            'flagged_for_review': self.flagged_for_review,
             'timestamp': self.timestamp.isoformat() if self.timestamp else None,
         }
 
