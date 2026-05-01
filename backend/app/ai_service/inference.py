@@ -1,3 +1,6 @@
+# DEPRECATED — superseded by roboflow_classifier.py.
+# Kept for offline/airgap inference where the Roboflow hosted API is unreachable.
+# Slated for deletion after the Roboflow path has been live for 2+ weeks.
 import os
 from ultralytics import YOLO
 from PIL import Image, ImageDraw

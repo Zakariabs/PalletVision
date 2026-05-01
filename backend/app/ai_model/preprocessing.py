@@ -1,3 +1,5 @@
+# DEPRECATED — used by the legacy local YOLO pipeline. Roboflow handles preprocessing
+# server-side now. Kept alongside train_model.py for offline retraining.
 import cv2
 import numpy as np
 

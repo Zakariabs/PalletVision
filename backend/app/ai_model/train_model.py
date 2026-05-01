@@ -1,3 +1,6 @@
+# DEPRECATED — training has moved to Roboflow. See README "Train Your Own Model".
+# Kept for offline/airgap retraining only. Hardcoded /home/zakaria path will not work
+# inside Docker — run on the host with the dataset mounted.
 from ultralytics import YOLO
 import torch
 
