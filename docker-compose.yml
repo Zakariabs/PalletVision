@@ -21,10 +21,12 @@ services:
     environment:
       - FLASK_ENV=development
       - DATABASE_URL=postgresql+psycopg2://pallet:pallet@timescaledb:5432/warehouse
+    env_file:
+      - .env
     ports:
       - "5000:5000"
     volumes:
-      - ./backend/app/ai_model/dataset/test_images:/app/images
+      - pallet_images:/app/images
     depends_on:
       timescaledb:
         condition: service_healthy
@@ -61,11 +63,16 @@ services:
     container_name: inference
     environment:
       - DATABASE_URL=postgresql+psycopg2://pallet:pallet@timescaledb:5432/warehouse
+    env_file:
+      - .env
     volumes:
-      - ./backend/app/ai_service/images:/app/images:ro
-      - ./backend/app/ai_service/inferenced:/app/images/inferenced
+      - pallet_images:/app/images
+      - ./backend/app/ai_service/images:/app/seed_images:ro
     depends_on:
       frontend:
         condition: service_healthy
 
     command: ["python", "app/ai_service/app.py"]
+
+volumes:
+  pallet_images:
