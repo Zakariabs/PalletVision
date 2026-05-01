@@ -121,8 +121,55 @@ If you need to reinitialize the database:
 
 ---
 
+## Train Your Own Model in Roboflow
+
+PalletVision runs inference against a **classification** model hosted on Roboflow. The worker calls Roboflow's hosted API, displays the top class + confidence, and auto-uploads any low-confidence frame back to your dataset for re-labeling.
+
+### 1. Create the Roboflow project
+
+1. Sign up at [roboflow.com](https://roboflow.com) and create a workspace.
+2. Create a **new project** and pick **Classification** as the project type (not Object Detection).
+3. Use class names that match the seeded `PalletType` rows: `euro`, `EPAL`, `Other`. Names that don't match will be coerced to `Other` at runtime.
+
+### 2. Upload, label, and train
+
+1. Drag your pallet images into the project and assign one class per image.
+2. Click **Generate** to produce a dataset version, then **Train** (Fast or Accurate). Training typically takes 10–30 minutes.
+3. Once training completes, the version appears under **Versions** in the sidebar.
+
+### 3. Get your credentials
+
+1. **Settings → Roboflow API** → copy your private API key.
+2. From the project page URL `https://app.roboflow.com/<workspace>/<project>`, copy the `workspace/project` slug.
+3. Note the trained version number (e.g. `1`).
+
+### 4. Configure PalletVision
+
+```bash
+cp .env.example .env
+# then edit .env and fill in:
+#   ROBOFLOW_API_KEY
+#   ROBOFLOW_PROJECT_ID    (workspace/project)
+#   ROBOFLOW_MODEL_VERSION (integer)
+```
+
+Restart the stack: `docker-compose up --build -d`.
+
+### 5. Active learning loop
+
+Any inference whose confidence is below `ROBOFLOW_CONFIDENCE_THRESHOLD` (default `0.6`) is:
+
+- marked with a yellow **Review** badge in the Station Dashboard, and
+- uploaded back to your Roboflow project's dataset (unassigned queue).
+
+Periodically open Roboflow → Annotate, label the new images, regenerate the dataset, and train a new version. Bump `ROBOFLOW_MODEL_VERSION` in `.env` and restart the worker to roll the new model out.
+
+Set `ROBOFLOW_UPLOAD_ON_LOW_CONF=false` if you only want the flag without the upload.
+
+> **Legacy local YOLO training** in `backend/app/ai_model/` is deprecated; kept for airgap use only.
+
+---
+
 ## License
 
 This project is licensed under the MIT License.
-
----
