@@ -1,6 +1,7 @@
 let inferenceRequestsData = [];
 let stationsData = [];
 const token = localStorage.getItem('jwtToken');
+const API_BASE = 'http://localhost:5000';
 
 // Utility function to get URL query parameters
 const getQueryParam = (key) => {
@@ -11,26 +12,44 @@ const getQueryParam = (key) => {
 // Get the station_id from the URL query parameters
 const stationId = getQueryParam('station_id');
 
+// Convert a backend-stored image path into a URL the browser can fetch.
+// Backend serves anything under /app/images via GET /images/<path>.
+const toImageUrl = (p) => {
+    if (!p) return null;
+    if (/^https?:\/\//i.test(p)) return p;
+    const idx = p.indexOf('/app/images/');
+    const rel = idx >= 0 ? p.slice(idx + '/app/images/'.length) : p.replace(/^\/+/, '');
+    return `${API_BASE}/images/${rel}`;
+};
+
+const reviewBadge = (flagged) => flagged
+    ? '<span class="badge bg-warning text-dark">Review</span>'
+    : '<span class="badge bg-success">OK</span>';
+
 // Function to populate the table
 const populateTable = (requests) => {
     const tableBody = document.getElementById('inference-requests');
     tableBody.innerHTML = ''; // Clear existing rows
     requests.forEach(request => {
+        const initialUrl = toImageUrl(request.initial_image_path);
+        const annotatedUrl = toImageUrl(request.inferred_image_path);
         const row = `
             <tr>
                 <td>${new Date(request.answer_time).toLocaleString()}</td>
                 <td>${request.pallet_type}</td>
                 <td>
-                    ${request.initial_image_path
-                        ? `<img src="${request.initial_image_path.replace('/app/app/ai_service/images/', 'http://localhost:5000/images/')}" alt="Initial Image" class="table-image">`
+                    ${initialUrl
+                        ? `<img src="${initialUrl}" alt="Initial Image" class="table-image">`
                         : '<span class="text-muted">No Image</span>'}
                 </td>
                 <td>
-                    ${request.inferred_image_path
-                        ? `<img src="${request.inferred_image_path.replace('/app/app/ai_service/', 'http://localhost:5000/images/')}" alt="Inferred Image" class="table-image">`
+                    ${annotatedUrl
+                        ? `<img src="${annotatedUrl}" alt="Annotated Image" class="table-image">`
                         : '<span class="text-muted">No Image</span>'}
                 </td>
                 <td>${(request.confidence_level * 100).toFixed(2)}%</td>
+                <td>${request.model_version || '<span class="text-muted">—</span>'}</td>
+                <td>${reviewBadge(request.flagged_for_review)}</td>
             </tr>
         `;
         tableBody.insertAdjacentHTML('afterbegin', row);
